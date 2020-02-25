@@ -3182,7 +3182,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       Properties config = getDistributedSystemProperties();
       config.setProperty(LOCATORS, locators);
-      config.setProperty("log-level", "debug");
 
       createCache(new CacheFactory(config));
 
