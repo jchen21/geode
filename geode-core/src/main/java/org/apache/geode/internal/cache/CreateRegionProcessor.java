@@ -85,14 +85,14 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     for (int retry = 0; retry < 5; retry++) {
       Set recps = getRecipients();
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("Creating region {}", this.newRegion);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.info("Creating region {}", this.newRegion);
+      // }
 
       if (recps.isEmpty()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CreateRegionProcessor.initializeRegion, no recipients, msg not sent");
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("CreateRegionProcessor.initializeRegion, no recipients, msg not sent");
+        // }
         this.newRegion.getDistributionAdvisor().setInitialized();
 
         ((LocalRegion) this.newRegion).getEventTracker().setInitialized();
@@ -141,10 +141,10 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         replyProc.cleanup();
         ((LocalRegion) this.newRegion).getEventTracker().setInitialized();
         if (((LocalRegion) this.newRegion).isUsedForPartitionedRegionBucket()) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("initialized bucket event tracker: {}",
-                ((LocalRegion) this.newRegion).getEventTracker());
-          }
+          // if (logger.isDebugEnabled()) {
+          logger.info("initialized bucket event tracker: {}",
+              ((LocalRegion) this.newRegion).getEventTracker());
+          // }
         }
       }
     } // while
@@ -229,9 +229,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           "CreateRegionProcessor is unable to process message of type " + msg.getClass());
       CreateRegionReplyMessage reply = (CreateRegionReplyMessage) msg;
       LocalRegion lr = (LocalRegion) newRegion;
-      if (logger.isDebugEnabled()) {
-        logger.debug("CreateRegionProcessor processing {}", msg);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.info("CreateRegionProcessor processing {}", msg);
+      // }
       try {
         if (reply.profile != null) {
           if (newRegion instanceof DistributedRegion) {
@@ -291,9 +291,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       } finally {
         // invoke super.process() even in case of exceptions (bug #41556)
-        if (logger.isDebugEnabled()) {
-          logger.debug("CreateRegionProcessor invoking super.process()");
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("CreateRegionProcessor invoking super.process()");
+        // }
         super.process(msg);
       }
     }
@@ -366,9 +366,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           // has been locally destroyed
           if (lclRgn.isUsedForPartitionedRegionBucket()) {
             if (!((BucketRegion) lclRgn).isPartitionedRegionOpen()) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("<Partitioned Region Closed or Locally Destroyed> {}", this);
-              }
+              // if (logger.isDebugEnabled()) {
+              logger.info("<Partitioned Region Closed or Locally Destroyed> {}", this);
+              // }
               return;
             }
           }
@@ -379,24 +379,24 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             handleCacheDistributionAdvisee(
                 PartitionedRegionHelper.getProxyBucketRegion(cache, this.regionPath, false), false);
           } else {
-            if (logger.isDebugEnabled()) {
-              logger.debug("<lclRgn scope is not distributed. Scope={}> {}",
-                  lclRgn.getAttributes().getScope(), this);
-            }
+            // if (logger.isDebugEnabled()) {
+            logger.info("<lclRgn scope is not distributed. Scope={}> {}",
+                lclRgn.getAttributes().getScope(), this);
+            // }
           }
         }
       } catch (PRLocallyDestroyedException ignore) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("<Region Locally Destroyed> {}", this);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("<Region Locally Destroyed> {}", this);
+        // }
       } catch (RegionDestroyedException ignore) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("<RegionDestroyed> {}", this);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("<RegionDestroyed> {}", this);
+        // }
       } catch (CancelException ignore) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("<CancelException> {}", this);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("<CancelException> {}", this);
+        // }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -432,10 +432,10 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
         if (replyException != null && !this.incompatible) {
           // no need to log the exception if it was caused by compatibility check
-          if (logger.isDebugEnabled()) {
-            logger.debug("While processing '{}', got exception, returning to sender", this,
-                replyException);
-          }
+          // if (logger.isDebugEnabled()) {
+          logger.info("While processing '{}', got exception, returning to sender", this,
+              replyException);
+          // }
         }
         replyMsg.setException(replyException);
         dm.putOutgoing(replyMsg);
@@ -454,9 +454,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         boolean isRealRegion) {
       if (cda == null) {
         // local region or proxy bucket region not found
-        if (logger.isDebugEnabled()) {
-          logger.debug("<lclRgn is null> {}", this); // matches old logging
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("<lclRgn is null> {}", this); // matches old logging
+        // }
         return;
       }
       String errorMsg = null;
@@ -466,9 +466,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
       if (errorMsg != null) {
         this.incompatible = true;
-        if (logger.isDebugEnabled()) {
-          logger.debug("{} <replyProfile not set because errorMsg={}", this, errorMsg);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("{} <replyProfile not set because errorMsg={}", this, errorMsg);
+        // }
         this.replyException = new ReplyException(new IllegalStateException(errorMsg));
       } else {
         if (isRealRegion) { // TODO do we need this if clause??
@@ -645,10 +645,10 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         result = cspResult;
       }
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("CreateRegionProcessor.checkCompatibility: this={}; other={}; result={}", rgn,
-            profile, result);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.info("CreateRegionProcessor.checkCompatibility: this={}; other={}; result={}", rgn,
+          profile, result);
+      // }
 
       return result;
     }
