@@ -341,26 +341,28 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
+      logger.info("CreateRegionMessage.process() started: {}", this);
       // Set thread local flag to allow entrance through initialization Latch
       final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
       LocalRegion lclRgn = null;
-
+      logger.info("CreateRegionMessage.process() checkpoint 1: {}", this);
       PersistentMemberID destroyedId = null;
       try {
         // get the region from the path, but do NOT wait on initialization,
         // otherwise we could have a distributed deadlock
 
         InternalCache cache = dm.getExistingCache();
-
+        logger.info("CreateRegionMessage.process() checkpoint 2: {}", this);
         // Fix for bug 42051 - Discover any regions that are in the process
         // of being destroyed
         DistributedRegion destroyingRegion = cache.getRegionInDestroy(this.regionPath);
+        logger.info("CreateRegionMessage.process() checkpoint 3: {}", this);
         if (destroyingRegion != null) {
           destroyedId = destroyingRegion.getPersistentID();
         }
-
+        logger.info("CreateRegionMessage.process() checkpoint 4: {}", this);
         lclRgn = (LocalRegion) cache.getRegion(this.regionPath);
-
+        logger.info("CreateRegionMessage.process() checkpoint 5: {}", this);
         if (lclRgn instanceof CacheDistributionAdvisee) {
           // bug 37604 - don't return a profile if this is a bucket and the owner
           // has been locally destroyed
