@@ -6084,6 +6084,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   public void recoverValuesIfNeeded(Map<Long, DiskRecoveryStore> diskRecoveryStores) {
     // Early out if we start closing the parent.
+    logger.info("{} recoverValuesIfNeeded()", toString());
     if (getParent().isClosing()) {
       return;
     }

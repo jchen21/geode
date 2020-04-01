@@ -4375,6 +4375,7 @@ public class DiskStoreImpl implements DiskStore {
 
     private void doAsyncValueRecovery() {
       synchronized (asyncValueRecoveryLock) {
+        logger.info("Start doAsyncValueRecovery()");
         DiskStoreObserver.startAsyncValueRecovery(DiskStoreImpl.this);
         try {
           for (Oplog oplog : oplogSet) {
