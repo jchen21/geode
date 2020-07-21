@@ -369,10 +369,10 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
             boolean sent = GrantorRequestMessage.send(grantorVersion, dlsSerialNumber, serviceName,
                 grc.currentElder, dm, processor, oldTurk, opCode);
             if (!sent) {
-              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                logger.trace(LogMarker.DLS_VERBOSE, "Unable to communicate with elder {}",
+
+                logger.info( "Unable to communicate with elder {}",
                     grc.currentElder);
-              }
+
             }
             try {
               processor.waitForRepliesUninterruptibly();
@@ -472,9 +472,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       msg.opCode = opCode;
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(elder);
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "GrantorRequestMessage sending {} to {}", msg, elder);
-      }
+
+        logger.info( "GrantorRequestMessage sending {} to {}", msg, elder);
+
       Set failures = dm.putOutgoing(msg);
       return failures == null || failures.size() == 0;
     }

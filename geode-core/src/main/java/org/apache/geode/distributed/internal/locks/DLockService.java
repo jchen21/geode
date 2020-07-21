@@ -268,7 +268,7 @@ public class DLockService extends DistributedLockService {
    * to the elder to fetch this information.
    */
   public LockGrantorId getLockGrantorId() {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+
     boolean ownLockGrantorFutureResult = false;
     FutureResult lockGrantorFutureResultRef = null;
 
@@ -287,10 +287,10 @@ public class DLockService extends DistributedLockService {
           } else {
             ownLockGrantorFutureResult = true;
             lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE,
+
+              logger.info(
                   "[getLockGrantorId] creating lockGrantorFutureResult");
-            }
+
             this.lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
         }
@@ -313,18 +313,18 @@ public class DLockService extends DistributedLockService {
         theLockGrantorId =
             new LockGrantorId(this.dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
 
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[getLockGrantorId] elder says grantor is {}",
+
+          logger.info( "[getLockGrantorId] elder says grantor is {}",
               theLockGrantorId);
-        }
+
 
         // elder tells us to be the grantor...
         if (theLockGrantorId.isLocal(getSerialNumber())) {
           boolean needsRecovery = gi.needsRecovery();
           if (!needsRecovery) {
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE, "[getLockGrantorId] needsRecovery is false");
-            }
+
+              logger.info( "[getLockGrantorId] needsRecovery is false");
+
             synchronized (this.lockGrantorIdLock) {
               // either no previous grantor or grantor is newer
               Assert.assertTrue(
@@ -386,15 +386,15 @@ public class DLockService extends DistributedLockService {
       LockGrantorId myLockGrantorId) {
     DLockGrantor myGrantor =
         DLockGrantor.createGrantor(this, myLockGrantorId.getLockGrantorVersion());
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[createLocalGrantor] Calling makeLocalGrantor");
-    }
+
+      logger.info( "[createLocalGrantor] Calling makeLocalGrantor");
+
     return makeLocalGrantor(elder, needsRecovery, myLockGrantorId, myGrantor);
   }
 
   private boolean makeLocalGrantor(InternalDistributedMember elder, boolean needsRecovery,
       LockGrantorId myLockGrantorId, DLockGrantor myGrantor) {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+
     boolean success = false;
     try {
       synchronized (this.lockGrantorIdLock) {
@@ -405,38 +405,38 @@ public class DLockService extends DistributedLockService {
         InternalDistributedMember currentElder = getElderId();
         if (!currentElder.equals(elder)) {
           // abort because elder changed
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "Failed to create {} because elder changed from {} to {}", myLockGrantorId, elder,
                 currentElder);
-          }
+
           return false; // exit
         }
 
         if (this.deposingLockGrantorId != null) {
           if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE, "Failed to create {} because I was deposed by {}",
+
+              logger.info( "Failed to create {} because I was deposed by {}",
                   myLockGrantorId, this.deposingLockGrantorId);
-            }
+
             this.deposingLockGrantorId = null;
             return false; // exit
           }
 
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
+
+            logger.info( "{} failed to depose {}",
                 this.deposingLockGrantorId, myLockGrantorId);
-          }
+
           // older grantor couldn't depose us, so null it out...
           this.deposingLockGrantorId = null;
         }
 
         if (!setLockGrantorId(myLockGrantorId, myGrantor)) {
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "[getLockGrantorId] failed to create {} because current grantor is {}",
                 myLockGrantorId, this.lockGrantorId);
-          }
+
           return false; // exit
         }
       } // release sync on this.lockGrantorIdLock
@@ -462,18 +462,18 @@ public class DLockService extends DistributedLockService {
 
         if (this.deposingLockGrantorId != null) {
           if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE, "Failed to create {} because I was deposed by {}",
+
+              logger.info( "Failed to create {} because I was deposed by {}",
                   myLockGrantorId, this.deposingLockGrantorId);
-            }
+
             this.deposingLockGrantorId = null;
             return false; // exit
           }
 
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
+
+            logger.info( "{} failed to depose {}",
                 this.deposingLockGrantorId, myLockGrantorId);
-          }
+
           this.deposingLockGrantorId = null;
         }
 
@@ -495,24 +495,24 @@ public class DLockService extends DistributedLockService {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[makeLocalGrantor] throwing Error", e);
-      }
+
+        logger.info( "[makeLocalGrantor] throwing Error", e);
+
       throw e;
     } catch (RuntimeException e) {
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[makeLocalGrantor] throwing RuntimeException", e);
-      }
+
+        logger.info( "[makeLocalGrantor] throwing RuntimeException", e);
+
       throw e;
     } finally {
 
       try {
         // abort if unsuccessful or if lock service was destroyed
         if (!success || isDestroyed()) {
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE, "[makeLocalGrantor] aborting {} and {}",
+
+            logger.info( "[makeLocalGrantor] aborting {} and {}",
                 myLockGrantorId, myGrantor);
-          }
+
           nullLockGrantorId(myLockGrantorId);
           if (!myGrantor.isDestroyed()) {
             myGrantor.destroy();
@@ -549,10 +549,10 @@ public class DLockService extends DistributedLockService {
       return true;
     } else if (newLockGrantorId.isRemote() && this.lockGrantorId != null
         && this.lockGrantorId.hasLockGrantorVersion()) {
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[setLockGrantorId] tried to replace {} with {}",
+
+        logger.info( "[setLockGrantorId] tried to replace {} with {}",
             this.lockGrantorId, newLockGrantorId);
-      }
+
       return false;
     } else if (newLockGrantorId.isNewerThan(this.lockGrantorId)) {
       this.lockGrantorId = newLockGrantorId;
@@ -589,22 +589,22 @@ public class DLockService extends DistributedLockService {
    */
   void deposeOlderLockGrantorId(LockGrantorId newLockGrantorId) {
     LockGrantorId deposedLockGrantorId = null;
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+
     synchronized (this.lockGrantorIdLock) {
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[deposeOlderLockGrantorId] pre-deposing {} for new {}",
+
+        logger.info( "[deposeOlderLockGrantorId] pre-deposing {} for new {}",
             deposedLockGrantorId, newLockGrantorId);
-      }
+
       this.deposingLockGrantorId = newLockGrantorId;
       deposedLockGrantorId = this.lockGrantorId;
     }
     if (deposedLockGrantorId != null && deposedLockGrantorId.hasLockGrantorVersion()
         && newLockGrantorId.isNewerThan(deposedLockGrantorId)) {
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE,
+
+        logger.info(
             "[deposeOlderLockGrantorId] post-deposing {} for new {}", deposedLockGrantorId,
             newLockGrantorId);
-      }
+
       nullLockGrantorId(deposedLockGrantorId);
     }
   }
@@ -642,10 +642,10 @@ public class DLockService extends DistributedLockService {
       }
     } finally {
       if (grantorToDestroy != null) {
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[nullLockGrantorId] destroying {}",
+
+          logger.info( "[nullLockGrantorId] destroying {}",
               grantorToDestroy);
-        }
+
         grantorToDestroy.destroy();
       }
     }
@@ -783,11 +783,11 @@ public class DLockService extends DistributedLockService {
   private void notLockGrantorId(LockGrantorId notLockGrantorId, long timeToWait,
       final TimeUnit timeUnit) {
     if (notLockGrantorId.isLocal(getSerialNumber())) {
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE,
+
+        logger.info(
             "notLockGrantorId {} returning early because notGrantor {} was equal to the local dm {}",
             this.serviceName, notLockGrantorId, this.dm.getId());
-      }
+
       // Let the local destroy or processing of transfer do the clear
       return;
     }
@@ -840,10 +840,10 @@ public class DLockService extends DistributedLockService {
       } else {
         // elder says another member is the grantor
         nullLockGrantorId(notLockGrantorId);
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+
+          logger.info(
               "notLockGrantorId cleared lockGrantorId for service {}", this.serviceName);
-        }
+
       }
     } finally {
       synchronized (this.lockGrantorIdLock) {
@@ -940,7 +940,7 @@ public class DLockService extends DistributedLockService {
     boolean ownLockGrantorFutureResult = false;
     FutureResult lockGrantorFutureResultRef = null;
 
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+
     LockGrantorId myLockGrantorId = null;
     try { // finally handles lockGrantorFutureResult
 
@@ -960,10 +960,10 @@ public class DLockService extends DistributedLockService {
             // create new lockGrantorFutureResult for other threads to block on
             ownLockGrantorFutureResult = true;
             lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE,
+
+              logger.info(
                   "[becomeLockGrantor] creating lockGrantorFutureResult");
-            }
+
             this.lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
         }
@@ -988,10 +988,10 @@ public class DLockService extends DistributedLockService {
           Assert.assertTrue(setLockGrantorId(tempLockGrantorId, myGrantor));
         }
 
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "become set lockGrantorId to {} for service {}",
+
+          logger.info( "become set lockGrantorId to {} for service {}",
               this.lockGrantorId, this.serviceName);
-        }
+
 
         InternalDistributedMember elder = getElderId();
         Assert.assertTrue(elder != null);
@@ -1006,9 +1006,9 @@ public class DLockService extends DistributedLockService {
         myLockGrantorId =
             new LockGrantorId(this.dm, this.dm.getId(), myGrantorVersion, getSerialNumber());
 
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[becomeLockGrantor] Calling makeLocalGrantor");
-        }
+
+          logger.info( "[becomeLockGrantor] Calling makeLocalGrantor");
+
         if (!makeLocalGrantor(elder, needsRecovery, myLockGrantorId, myGrantor)) {
           return;
         }
@@ -1103,9 +1103,9 @@ public class DLockService extends DistributedLockService {
       if (token != null) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
-            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-              logger.trace(LogMarker.DLS_VERBOSE, "Freeing {} in {}", token, this);
-            }
+
+              logger.info( "Freeing {} in {}", token, this);
+
             removeTokenFromMap(name);
             token.destroy();
             getStats().incTokens(-1);
@@ -1137,9 +1137,9 @@ public class DLockService extends DistributedLockService {
       for (DLockToken token : this.tokens.values()) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
-            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-              logger.trace(LogMarker.DLS_VERBOSE, "Freeing {} in {}", token, this);
-            }
+
+              logger.info( "Freeing {} in {}", token, this);
+
             if (unusedTokens == Collections.EMPTY_SET) {
               unusedTokens = new HashSet<>();
             }
@@ -1384,9 +1384,9 @@ public class DLockService extends DistributedLockService {
       if (waitLimit < 0)
         waitLimit = Long.MAX_VALUE;
 
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - entering lock()", this, name);
-      }
+
+        logger.info("{}, name: {} - entering lock()", this, name);
+
 
       DLockToken token = getOrCreateToken(name);
       boolean gotLock = false;
@@ -1423,10 +1423,10 @@ public class DLockService extends DistributedLockService {
           synchronized (token) {
             token.checkForExpiration();
             if (token.isLeaseHeldByCurrentThread()) {
-              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                logger.trace(LogMarker.DLS_VERBOSE, "{} , name: {} - lock() is reentrant: {}", this,
+
+                logger.info( "{} , name: {} - lock() is reentrant: {}", this,
                     name, token);
-              }
+
               reentrant = true;
               if (reentrant && disallowReentrant) {
                 throw new IllegalStateException(
@@ -1472,10 +1472,10 @@ public class DLockService extends DistributedLockService {
           gotLock = processor.requestLock(interruptible, lockId); // can throw
                                                                   // InterruptedException
 
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Grantor {} replied {}", theLockGrantorId,
+
+            logger.info( "Grantor {} replied {}", theLockGrantorId,
                 processor.getResponseCodeString());
-          }
+
 
           if (gotLock) {
             leaseExpireTime = processor.getLeaseExpireTime();
@@ -1486,10 +1486,10 @@ public class DLockService extends DistributedLockService {
               continue;
             }
 
-            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-              logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - granted lock: {}", this, name,
+
+              logger.info( "{}, name: {} - granted lock: {}", this, name,
                   token);
-            }
+
             keepTrying = false;
           } else if (processor.repliedDestroyed()) {
             checkDestroyed(); // throws LockServiceDestroyedException
@@ -1558,16 +1558,16 @@ public class DLockService extends DistributedLockService {
         blockedOn.set(null);
       }
 
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - exiting lock() returning {}", this,
+
+        logger.info( "{}, name: {} - exiting lock() returning {}", this,
             name, gotLock);
-      }
+
       return gotLock;
     } finally {
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - exiting lock() without returning value",
+
+        logger.info( "{}, name: {} - exiting lock() without returning value",
             this, name);
-      }
+
       if (interrupted) {
         Thread.currentThread().interrupt();
       }
@@ -1583,18 +1583,18 @@ public class DLockService extends DistributedLockService {
     synchronized (this.lockGrantorIdLock) {
       if (!checkLockGrantorId(theLockGrantorId)) {
         // race: grantor changed
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+
+          logger.info(
               "Cannot honor grant from {} because {} is now a grantor.", theLockGrantorId,
               this.lockGrantorId);
-        }
+
       } else if (isDestroyed()) {
         // race: dls was destroyed
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+
+          logger.info(
               "Cannot honor grant from {} because this lock service has been destroyed.",
               theLockGrantorId);
-        }
+
         needToReleaseOrphanedGrant = true;
       } else {
         synchronized (this.tokens) {
@@ -1727,11 +1727,11 @@ public class DLockService extends DistributedLockService {
 
   @Override
   public void unlock(Object name) throws LockNotHeldException, LeaseExpiredException {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
 
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - entering unlock()", this, name);
-    }
+
+
+      logger.info( "{}, name: {} - entering unlock()", this, name);
+
 
     long statStart = getStats().startLockRelease();
 
@@ -1747,9 +1747,9 @@ public class DLockService extends DistributedLockService {
         checkDestroyed();
         token = basicGetToken(name);
         if (token == null) {
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE, "{}, [unlock] no token found for: {}", this, name);
-          }
+
+            logger.info( "{}, [unlock] no token found for: {}", this, name);
+
           throw new LockNotHeldException(
               String.format(
                   "Attempting to unlock %s : %s , but this thread does not own the lock.",
@@ -1761,10 +1761,10 @@ public class DLockService extends DistributedLockService {
           rThread = token.getLesseeThread();
           if (!token.isLeaseHeldByCurrentOrRemoteThread(rThread)) {
             token.throwIfCurrentThreadHadExpiredLease();
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE, "{}, [unlock] {} not leased by this thread.",
+
+              logger.info( "{}, [unlock] {} not leased by this thread.",
                   this, token);
-            }
+
             throw new LockNotHeldException(
                 String.format(
                     "Attempting to unlock %s : %s , but this thread does not own the lock. %s",
@@ -1827,9 +1827,9 @@ public class DLockService extends DistributedLockService {
         if (this.automateFreeResources) {
           freeResources(name);
         }
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "{}, name: {} - exiting unlock()", this, name);
-        }
+
+          logger.info( "{}, name: {} - exiting unlock()", this, name);
+
       }
     }
   }
@@ -1882,10 +1882,10 @@ public class DLockService extends DistributedLockService {
       throws IllegalArgumentException {
     Assert.assertHoldsLock(services, true);
 
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "About to create DistributedLockService <{}>",
+
+      logger.info( "About to create DistributedLockService <{}>",
           serviceName);
-    }
+
 
     DLockService svc = new DLockService(serviceName, ds, isDistributed, destroyOnDisconnect,
         automateFreeResources);
@@ -1901,10 +1901,10 @@ public class DLockService extends DistributedLockService {
       getStats().incServices(1);
       this.ds.addDisconnectListener(disconnectListener);
       success = true;
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "Created DistributedLockService <{}>",
+
+        logger.info( "Created DistributedLockService <{}>",
             this.serviceName);
-      }
+
     } finally {
       if (!success) {
         services.remove(this.serviceName);
@@ -1962,10 +1962,10 @@ public class DLockService extends DistributedLockService {
   }
 
   public void releaseTryLocks(DLockBatchId batchId, Callable<Boolean> untilCondition) {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[DLockService.releaseTryLocks] enter: {}", batchId);
-    }
+
+
+      logger.info( "[DLockService.releaseTryLocks] enter: {}", batchId);
+
 
     long statStart = getStats().startLockRelease();
 
@@ -2001,9 +2001,9 @@ public class DLockService extends DistributedLockService {
     } finally {
       decActiveLocks();
       getStats().endLockRelease(statStart);
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[DLockService.releaseTryLocks] exit: {}", batchId);
-      }
+
+        logger.info( "[DLockService.releaseTryLocks] exit: {}", batchId);
+
     }
   }
 
@@ -2019,10 +2019,10 @@ public class DLockService extends DistributedLockService {
 
     long startTime = getLockTimeStamp(dm);
 
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[acquireTryLocks] acquiring {}", dlockBatch);
-    }
+
+
+      logger.info( "[acquireTryLocks] acquiring {}", dlockBatch);
+
 
     long requestWaitTime = waitTimeMillis;
     long requestLeaseTime = leaseTimeMillis;
@@ -2076,11 +2076,11 @@ public class DLockService extends DistributedLockService {
         } else {
           keyIfFailed[0] = processor.getKeyIfFailed();
           if (keyIfFailed[0] == null) {
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE,
+
+              logger.info(
                   "[acquireTryLocks] lock request failed but provided no conflict key; responseCode=",
                   processor.getResponseCodeString());
-            }
+
           } else {
             break;
           }
@@ -2102,10 +2102,10 @@ public class DLockService extends DistributedLockService {
         }
       }
 
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[acquireTryLocks] {} locks for {}",
+
+        logger.info( "[acquireTryLocks] {} locks for {}",
             (gotLocks ? "acquired" : "failed to acquire"), dlockBatch);
-      }
+
     } finally {
       getStats().endLockWait(statStart, gotLocks);
     }
@@ -2206,10 +2206,10 @@ public class DLockService extends DistributedLockService {
       try {
         svc.destroyAndRemove();
       } catch (CancelException e) {
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+
+          logger.info(
               "destroyAndRemove of {} terminated due to cancellation: ", svc, e);
-        }
+
       }
     }
   }
@@ -2278,12 +2278,12 @@ public class DLockService extends DistributedLockService {
       boolean maybeHasActiveLocks) {
     Assert.assertHoldsLock(services, false);
     // synchronized (this.serviceLock) {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS_VERBOSE,
+
+
+      logger.info(
           "[DLockService.basicDestroy] Destroying {}, isCurrentlyLockGrantor={}, isMakingLockGrantor={}",
           this, isCurrentlyLockGrantor, isMakingLockGrantor);
-    }
+
 
     // if hasActiveLocks, tell grantor we're destroying...
     if (!isCurrentlyLockGrantor && maybeHasActiveLocks && !this.ds.isDisconnectThread()) {
@@ -2327,10 +2327,10 @@ public class DLockService extends DistributedLockService {
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         } catch (DistributedSystemDisconnectedException e) {
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "No longer waiting for grantor because of disconnect.", e);
-          }
+
         }
       }
       nullLockGrantorId(this.lockGrantorId);
@@ -2375,7 +2375,7 @@ public class DLockService extends DistributedLockService {
       nullLockGrantorId(currentLockGrantorId);
     }
 
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+
     synchronized (this.lockGrantorIdLock) {
       synchronized (this.tokens) {
         // build up set of currently held locks
@@ -2386,10 +2386,10 @@ public class DLockService extends DistributedLockService {
               // skip over token if ignoreForRecovery is true
               if (token.ignoreForRecovery()) {
                 // unlock of token must be in progress... ignore for recovery
-                if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS_VERBOSE, "getLockTokensForRecovery is skipping {}",
+
+                  logger.info( "getLockTokensForRecovery is skipping {}",
                       token);
-                }
+
               }
 
               // add token to heldLockSet
@@ -2458,9 +2458,9 @@ public class DLockService extends DistributedLockService {
       synchronized (token) {
         if (createNewToken) {
           this.tokens.put(name, token);
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Creating {} in {}", token, this);
-          }
+
+            logger.info( "Creating {} in {}", token, this);
+
           getStats().incTokens(1);
         }
         token.incUsage();
@@ -2563,20 +2563,20 @@ public class DLockService extends DistributedLockService {
 
         @Override
         public void onDisconnect(final InternalDistributedSystem sys) {
-          final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-          if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Shutting down Distributed Lock Services");
-          }
+
+
+            logger.info( "Shutting down Distributed Lock Services");
+
           long start = System.currentTimeMillis();
           try {
             destroyAll();
           } finally {
             closeStats();
             long delta = System.currentTimeMillis() - start;
-            if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS_VERBOSE, "Distributed Lock Services stopped (took {} ms)",
+
+              logger.info( "Distributed Lock Services stopped (took {} ms)",
                   delta);
-            }
+
           }
         }
       };
@@ -2961,9 +2961,9 @@ public class DLockService extends DistributedLockService {
   /** Provide way to peek at current lock grantor id when dls does not exist */
   static GrantorInfo checkLockGrantorInfo(String serviceName, InternalDistributedSystem system) {
     GrantorInfo gi = GrantorRequestProcessor.peekGrantor(serviceName, system);
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[checkLockGrantorId] returning {}", gi);
-    }
+
+      logger.info( "[checkLockGrantorId] returning {}", gi);
+
     return gi;
   }
 

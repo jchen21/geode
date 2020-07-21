@@ -279,10 +279,10 @@ public class DLockToken {
 
       long currentTime = getCurrentTime();
       if (currentTime > this.leaseExpireTime) {
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[checkForExpiration] Expiring token at {}: {}",
+
+          logger.info( "[checkForExpiration] Expiring token at {}: {}",
               currentTime, this);
-        }
+
         noteExpiredLease();
         basicReleaseLock();
         expired = true;
@@ -316,9 +316,9 @@ public class DLockToken {
     this.recursion = newRecursion;
     this.thread = Thread.currentThread();
 
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[DLockToken.grantLock.client] granted {}", this);
-    }
+
+      logger.info( "[DLockToken.grantLock.client] granted {}", this);
+
   }
 
   /**
@@ -413,10 +413,10 @@ public class DLockToken {
     else if (decRecursion && getRecursion() > 0) {
       incRecursion(-1);
       decUsage();
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[DLockToken.releaseLock] decremented recursion: {}",
+
+        logger.info( "[DLockToken.releaseLock] decremented recursion: {}",
             this);
-      }
+
       return true;
     }
 
@@ -432,10 +432,10 @@ public class DLockToken {
    * token.
    */
   private void basicReleaseLock() {
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[DLockToken.basicReleaseLock] releasing ownership: {}",
+
+      logger.info( "[DLockToken.basicReleaseLock] releasing ownership: {}",
           this);
-    }
+
 
     this.leaseId = -1;
     this.lesseeThread = null;
@@ -510,9 +510,9 @@ public class DLockToken {
    * lock token.
    */
   private void noteExpiredLease() {
-    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[noteExpiredLease] {}", this.thread);
-    }
+
+      logger.info( "[noteExpiredLease] {}", this.thread);
+
     if (this.expiredLeases == null) {
       this.expiredLeases = new WeakHashMap();
     }

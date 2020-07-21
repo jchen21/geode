@@ -142,18 +142,18 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       // build grantTokens from each reply...
       switch (reply.replyCode) {
         case DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE:
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Failed DLockRecoverGrantorReplyMessage: '{}'",
+
+            logger.info( "Failed DLockRecoverGrantorReplyMessage: '{}'",
                 reply);
-          }
+
           this.error = true;
           break;
         case DLockRecoverGrantorReplyMessage.OK:
           // collect results...
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Processing DLockRecoverGrantorReplyMessage: '{}'",
+
+            logger.info( "Processing DLockRecoverGrantorReplyMessage: '{}'",
                 reply);
-          }
+
 
           Set lockSet = new HashSet();
           DLockRemoteToken[] heldLocks = reply.heldLocks;
@@ -174,11 +174,11 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       }
       // maybe build up another reply to indicate lock recovery status?
     } catch (IllegalStateException e) {
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE,
+
+        logger.info(
             "Processing of DLockRecoverGrantorReplyMessage {} resulted in {}", msg, e.getMessage(),
             e);
-      }
+
     } finally {
       super.process(msg);
     }
@@ -435,16 +435,16 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
         replyMsg.setException(replyException);
         if (msg.getSender().equals(dm.getId())) {
           // process in-line in this VM
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "[DLockRecoverGrantorMessage.process] locally process reply");
-          }
+
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "[DLockRecoverGrantorMessage.process] send reply");
-          }
+
+            logger.info( "[DLockRecoverGrantorMessage.process] send reply");
+
           dm.putOutgoing(replyMsg);
         }
       }
