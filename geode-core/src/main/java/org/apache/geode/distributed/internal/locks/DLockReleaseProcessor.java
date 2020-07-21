@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -106,22 +105,22 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       DLockReleaseReplyMessage myReply = (DLockReleaseReplyMessage) msg;
 
 
-        logger.info( "Handling: {}", myReply);
+      logger.info("Handling: {}", myReply);
 
       this.reply = myReply;
 
 
-        // grantor acknowledged release of lock...
-        if (myReply.replyCode == DLockReleaseReplyMessage.OK) {
-          logger.info( "Successfully released {} in {}", this.objectName,
-              myReply.serviceName);
-        }
-        // sender denies being the grantor...
-        else if (myReply.replyCode == DLockReleaseReplyMessage.NOT_GRANTOR) {
-          logger.info(
-              "{} has responded DLockReleaseReplyMessage.NOT_GRANTOR for {}", myReply.getSender(),
-              myReply.serviceName);
-        }
+      // grantor acknowledged release of lock...
+      if (myReply.replyCode == DLockReleaseReplyMessage.OK) {
+        logger.info("Successfully released {} in {}", this.objectName,
+            myReply.serviceName);
+      }
+      // sender denies being the grantor...
+      else if (myReply.replyCode == DLockReleaseReplyMessage.NOT_GRANTOR) {
+        logger.info(
+            "{} has responded DLockReleaseReplyMessage.NOT_GRANTOR for {}", myReply.getSender(),
+            myReply.serviceName);
+      }
 
     } finally {
       super.process(msg);
@@ -190,8 +189,8 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         if (failed) {
           // above code failed so now ensure reply is sent
 
-            logger.info( "DLockReleaseMessage.process failed for <{}>",
-                this);
+          logger.info("DLockReleaseMessage.process failed for <{}>",
+              this);
 
           int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
           DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
@@ -229,7 +228,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         @Override
         public void run() {
 
-            logger.info( "[executeBasicProcess] waitForGrantor {}", msg);
+          logger.info("[executeBasicProcess] waitForGrantor {}", msg);
 
           basicProcess(dm, true);
         }
@@ -244,7 +243,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
     protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
 
 
-        logger.info( "[basicProcess] {}", this);
+      logger.info("[basicProcess] {}", this);
 
       int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
       ReplyException replyException = null;
@@ -282,7 +281,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       } catch (RuntimeException e) {
         replyException = new ReplyException(e);
 
-          logger.info( "[basicProcess] caught RuntimeException", e);
+        logger.info("[basicProcess] caught RuntimeException", e);
 
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -298,7 +297,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         SystemFailure.checkFailure();
         replyException = new ReplyException(e);
 
-          logger.info( "[basicProcess] caught Error", e);
+        logger.info("[basicProcess] caught Error", e);
 
       } finally {
         DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
@@ -328,10 +327,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         } // grantor != null
         else {
 
-            logger.info(
-                "DLockReleaseMessage, omitted postRemoteRelease lock on " + objectName
-                    + "; grantor = " + grantor + ", lockBatch = " + lockBatch + ", replyMsg = "
-                    + replyMsg);
+          logger.info(
+              "DLockReleaseMessage, omitted postRemoteRelease lock on " + objectName
+                  + "; grantor = " + grantor + ", lockBatch = " + lockBatch + ", replyMsg = "
+                  + replyMsg);
 
         }
       }

@@ -370,8 +370,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
                 grc.currentElder, dm, processor, oldTurk, opCode);
             if (!sent) {
 
-                logger.info( "Unable to communicate with elder {}",
-                    grc.currentElder);
+              logger.info("Unable to communicate with elder {}",
+                  grc.currentElder);
 
             }
             try {
@@ -473,7 +473,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(elder);
 
-        logger.info( "GrantorRequestMessage sending {} to {}", msg, elder);
+      logger.info("GrantorRequestMessage sending {} to {}", msg, elder);
 
       Set failures = dm.putOutgoing(msg);
       return failures == null || failures.size() == 0;

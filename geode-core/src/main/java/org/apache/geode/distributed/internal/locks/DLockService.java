@@ -288,8 +288,8 @@ public class DLockService extends DistributedLockService {
             ownLockGrantorFutureResult = true;
             lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
 
-              logger.info(
-                  "[getLockGrantorId] creating lockGrantorFutureResult");
+            logger.info(
+                "[getLockGrantorId] creating lockGrantorFutureResult");
 
             this.lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
@@ -314,8 +314,8 @@ public class DLockService extends DistributedLockService {
             new LockGrantorId(this.dm, gi.getId(), gi.getVersionId(), gi.getSerialNumber());
 
 
-          logger.info( "[getLockGrantorId] elder says grantor is {}",
-              theLockGrantorId);
+        logger.info("[getLockGrantorId] elder says grantor is {}",
+            theLockGrantorId);
 
 
         // elder tells us to be the grantor...
@@ -323,7 +323,7 @@ public class DLockService extends DistributedLockService {
           boolean needsRecovery = gi.needsRecovery();
           if (!needsRecovery) {
 
-              logger.info( "[getLockGrantorId] needsRecovery is false");
+            logger.info("[getLockGrantorId] needsRecovery is false");
 
             synchronized (this.lockGrantorIdLock) {
               // either no previous grantor or grantor is newer
@@ -387,7 +387,7 @@ public class DLockService extends DistributedLockService {
     DLockGrantor myGrantor =
         DLockGrantor.createGrantor(this, myLockGrantorId.getLockGrantorVersion());
 
-      logger.info( "[createLocalGrantor] Calling makeLocalGrantor");
+    logger.info("[createLocalGrantor] Calling makeLocalGrantor");
 
     return makeLocalGrantor(elder, needsRecovery, myLockGrantorId, myGrantor);
   }
@@ -406,9 +406,9 @@ public class DLockService extends DistributedLockService {
         if (!currentElder.equals(elder)) {
           // abort because elder changed
 
-            logger.info(
-                "Failed to create {} because elder changed from {} to {}", myLockGrantorId, elder,
-                currentElder);
+          logger.info(
+              "Failed to create {} because elder changed from {} to {}", myLockGrantorId, elder,
+              currentElder);
 
           return false; // exit
         }
@@ -416,16 +416,16 @@ public class DLockService extends DistributedLockService {
         if (this.deposingLockGrantorId != null) {
           if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
 
-              logger.info( "Failed to create {} because I was deposed by {}",
-                  myLockGrantorId, this.deposingLockGrantorId);
+            logger.info("Failed to create {} because I was deposed by {}",
+                myLockGrantorId, this.deposingLockGrantorId);
 
             this.deposingLockGrantorId = null;
             return false; // exit
           }
 
 
-            logger.info( "{} failed to depose {}",
-                this.deposingLockGrantorId, myLockGrantorId);
+          logger.info("{} failed to depose {}",
+              this.deposingLockGrantorId, myLockGrantorId);
 
           // older grantor couldn't depose us, so null it out...
           this.deposingLockGrantorId = null;
@@ -433,9 +433,9 @@ public class DLockService extends DistributedLockService {
 
         if (!setLockGrantorId(myLockGrantorId, myGrantor)) {
 
-            logger.info(
-                "[getLockGrantorId] failed to create {} because current grantor is {}",
-                myLockGrantorId, this.lockGrantorId);
+          logger.info(
+              "[getLockGrantorId] failed to create {} because current grantor is {}",
+              myLockGrantorId, this.lockGrantorId);
 
           return false; // exit
         }
@@ -463,16 +463,16 @@ public class DLockService extends DistributedLockService {
         if (this.deposingLockGrantorId != null) {
           if (this.deposingLockGrantorId.isNewerThan(myLockGrantorId)) {
 
-              logger.info( "Failed to create {} because I was deposed by {}",
-                  myLockGrantorId, this.deposingLockGrantorId);
+            logger.info("Failed to create {} because I was deposed by {}",
+                myLockGrantorId, this.deposingLockGrantorId);
 
             this.deposingLockGrantorId = null;
             return false; // exit
           }
 
 
-            logger.info( "{} failed to depose {}",
-                this.deposingLockGrantorId, myLockGrantorId);
+          logger.info("{} failed to depose {}",
+              this.deposingLockGrantorId, myLockGrantorId);
 
           this.deposingLockGrantorId = null;
         }
@@ -496,12 +496,12 @@ public class DLockService extends DistributedLockService {
       // is still usable:
       SystemFailure.checkFailure();
 
-        logger.info( "[makeLocalGrantor] throwing Error", e);
+      logger.info("[makeLocalGrantor] throwing Error", e);
 
       throw e;
     } catch (RuntimeException e) {
 
-        logger.info( "[makeLocalGrantor] throwing RuntimeException", e);
+      logger.info("[makeLocalGrantor] throwing RuntimeException", e);
 
       throw e;
     } finally {
@@ -510,8 +510,8 @@ public class DLockService extends DistributedLockService {
         // abort if unsuccessful or if lock service was destroyed
         if (!success || isDestroyed()) {
 
-            logger.info( "[makeLocalGrantor] aborting {} and {}",
-                myLockGrantorId, myGrantor);
+          logger.info("[makeLocalGrantor] aborting {} and {}",
+              myLockGrantorId, myGrantor);
 
           nullLockGrantorId(myLockGrantorId);
           if (!myGrantor.isDestroyed()) {
@@ -550,8 +550,8 @@ public class DLockService extends DistributedLockService {
     } else if (newLockGrantorId.isRemote() && this.lockGrantorId != null
         && this.lockGrantorId.hasLockGrantorVersion()) {
 
-        logger.info( "[setLockGrantorId] tried to replace {} with {}",
-            this.lockGrantorId, newLockGrantorId);
+      logger.info("[setLockGrantorId] tried to replace {} with {}",
+          this.lockGrantorId, newLockGrantorId);
 
       return false;
     } else if (newLockGrantorId.isNewerThan(this.lockGrantorId)) {
@@ -592,8 +592,8 @@ public class DLockService extends DistributedLockService {
 
     synchronized (this.lockGrantorIdLock) {
 
-        logger.info( "[deposeOlderLockGrantorId] pre-deposing {} for new {}",
-            deposedLockGrantorId, newLockGrantorId);
+      logger.info("[deposeOlderLockGrantorId] pre-deposing {} for new {}",
+          deposedLockGrantorId, newLockGrantorId);
 
       this.deposingLockGrantorId = newLockGrantorId;
       deposedLockGrantorId = this.lockGrantorId;
@@ -601,9 +601,9 @@ public class DLockService extends DistributedLockService {
     if (deposedLockGrantorId != null && deposedLockGrantorId.hasLockGrantorVersion()
         && newLockGrantorId.isNewerThan(deposedLockGrantorId)) {
 
-        logger.info(
-            "[deposeOlderLockGrantorId] post-deposing {} for new {}", deposedLockGrantorId,
-            newLockGrantorId);
+      logger.info(
+          "[deposeOlderLockGrantorId] post-deposing {} for new {}", deposedLockGrantorId,
+          newLockGrantorId);
 
       nullLockGrantorId(deposedLockGrantorId);
     }
@@ -643,8 +643,8 @@ public class DLockService extends DistributedLockService {
     } finally {
       if (grantorToDestroy != null) {
 
-          logger.info( "[nullLockGrantorId] destroying {}",
-              grantorToDestroy);
+        logger.info("[nullLockGrantorId] destroying {}",
+            grantorToDestroy);
 
         grantorToDestroy.destroy();
       }
@@ -784,9 +784,9 @@ public class DLockService extends DistributedLockService {
       final TimeUnit timeUnit) {
     if (notLockGrantorId.isLocal(getSerialNumber())) {
 
-        logger.info(
-            "notLockGrantorId {} returning early because notGrantor {} was equal to the local dm {}",
-            this.serviceName, notLockGrantorId, this.dm.getId());
+      logger.info(
+          "notLockGrantorId {} returning early because notGrantor {} was equal to the local dm {}",
+          this.serviceName, notLockGrantorId, this.dm.getId());
 
       // Let the local destroy or processing of transfer do the clear
       return;
@@ -841,8 +841,8 @@ public class DLockService extends DistributedLockService {
         // elder says another member is the grantor
         nullLockGrantorId(notLockGrantorId);
 
-          logger.info(
-              "notLockGrantorId cleared lockGrantorId for service {}", this.serviceName);
+        logger.info(
+            "notLockGrantorId cleared lockGrantorId for service {}", this.serviceName);
 
       }
     } finally {
@@ -961,8 +961,8 @@ public class DLockService extends DistributedLockService {
             ownLockGrantorFutureResult = true;
             lockGrantorFutureResultRef = new FutureResult(this.dm.getCancelCriterion());
 
-              logger.info(
-                  "[becomeLockGrantor] creating lockGrantorFutureResult");
+            logger.info(
+                "[becomeLockGrantor] creating lockGrantorFutureResult");
 
             this.lockGrantorFutureResult = lockGrantorFutureResultRef;
           }
@@ -989,8 +989,8 @@ public class DLockService extends DistributedLockService {
         }
 
 
-          logger.info( "become set lockGrantorId to {} for service {}",
-              this.lockGrantorId, this.serviceName);
+        logger.info("become set lockGrantorId to {} for service {}",
+            this.lockGrantorId, this.serviceName);
 
 
         InternalDistributedMember elder = getElderId();
@@ -1007,7 +1007,7 @@ public class DLockService extends DistributedLockService {
             new LockGrantorId(this.dm, this.dm.getId(), myGrantorVersion, getSerialNumber());
 
 
-          logger.info( "[becomeLockGrantor] Calling makeLocalGrantor");
+        logger.info("[becomeLockGrantor] Calling makeLocalGrantor");
 
         if (!makeLocalGrantor(elder, needsRecovery, myLockGrantorId, myGrantor)) {
           return;
@@ -1104,7 +1104,7 @@ public class DLockService extends DistributedLockService {
         synchronized (token) {
           if (!token.isBeingUsed()) {
 
-              logger.info( "Freeing {} in {}", token, this);
+            logger.info("Freeing {} in {}", token, this);
 
             removeTokenFromMap(name);
             token.destroy();
@@ -1138,7 +1138,7 @@ public class DLockService extends DistributedLockService {
         synchronized (token) {
           if (!token.isBeingUsed()) {
 
-              logger.info( "Freeing {} in {}", token, this);
+            logger.info("Freeing {} in {}", token, this);
 
             if (unusedTokens == Collections.EMPTY_SET) {
               unusedTokens = new HashSet<>();
@@ -1385,7 +1385,7 @@ public class DLockService extends DistributedLockService {
         waitLimit = Long.MAX_VALUE;
 
 
-        logger.info("{}, name: {} - entering lock()", this, name);
+      logger.info("{}, name: {} - entering lock()", this, name);
 
 
       DLockToken token = getOrCreateToken(name);
@@ -1424,8 +1424,8 @@ public class DLockService extends DistributedLockService {
             token.checkForExpiration();
             if (token.isLeaseHeldByCurrentThread()) {
 
-                logger.info( "{} , name: {} - lock() is reentrant: {}", this,
-                    name, token);
+              logger.info("{} , name: {} - lock() is reentrant: {}", this,
+                  name, token);
 
               reentrant = true;
               if (reentrant && disallowReentrant) {
@@ -1473,8 +1473,8 @@ public class DLockService extends DistributedLockService {
                                                                   // InterruptedException
 
 
-            logger.info( "Grantor {} replied {}", theLockGrantorId,
-                processor.getResponseCodeString());
+          logger.info("Grantor {} replied {}", theLockGrantorId,
+              processor.getResponseCodeString());
 
 
           if (gotLock) {
@@ -1487,8 +1487,8 @@ public class DLockService extends DistributedLockService {
             }
 
 
-              logger.info( "{}, name: {} - granted lock: {}", this, name,
-                  token);
+            logger.info("{}, name: {} - granted lock: {}", this, name,
+                token);
 
             keepTrying = false;
           } else if (processor.repliedDestroyed()) {
@@ -1559,14 +1559,14 @@ public class DLockService extends DistributedLockService {
       }
 
 
-        logger.info( "{}, name: {} - exiting lock() returning {}", this,
-            name, gotLock);
+      logger.info("{}, name: {} - exiting lock() returning {}", this,
+          name, gotLock);
 
       return gotLock;
     } finally {
 
-        logger.info( "{}, name: {} - exiting lock() without returning value",
-            this, name);
+      logger.info("{}, name: {} - exiting lock() without returning value",
+          this, name);
 
       if (interrupted) {
         Thread.currentThread().interrupt();
@@ -1584,16 +1584,16 @@ public class DLockService extends DistributedLockService {
       if (!checkLockGrantorId(theLockGrantorId)) {
         // race: grantor changed
 
-          logger.info(
-              "Cannot honor grant from {} because {} is now a grantor.", theLockGrantorId,
-              this.lockGrantorId);
+        logger.info(
+            "Cannot honor grant from {} because {} is now a grantor.", theLockGrantorId,
+            this.lockGrantorId);
 
       } else if (isDestroyed()) {
         // race: dls was destroyed
 
-          logger.info(
-              "Cannot honor grant from {} because this lock service has been destroyed.",
-              theLockGrantorId);
+        logger.info(
+            "Cannot honor grant from {} because this lock service has been destroyed.",
+            theLockGrantorId);
 
         needToReleaseOrphanedGrant = true;
       } else {
@@ -1730,7 +1730,7 @@ public class DLockService extends DistributedLockService {
 
 
 
-      logger.info( "{}, name: {} - entering unlock()", this, name);
+    logger.info("{}, name: {} - entering unlock()", this, name);
 
 
     long statStart = getStats().startLockRelease();
@@ -1748,7 +1748,7 @@ public class DLockService extends DistributedLockService {
         token = basicGetToken(name);
         if (token == null) {
 
-            logger.info( "{}, [unlock] no token found for: {}", this, name);
+          logger.info("{}, [unlock] no token found for: {}", this, name);
 
           throw new LockNotHeldException(
               String.format(
@@ -1762,8 +1762,8 @@ public class DLockService extends DistributedLockService {
           if (!token.isLeaseHeldByCurrentOrRemoteThread(rThread)) {
             token.throwIfCurrentThreadHadExpiredLease();
 
-              logger.info( "{}, [unlock] {} not leased by this thread.",
-                  this, token);
+            logger.info("{}, [unlock] {} not leased by this thread.",
+                this, token);
 
             throw new LockNotHeldException(
                 String.format(
@@ -1828,7 +1828,7 @@ public class DLockService extends DistributedLockService {
           freeResources(name);
         }
 
-          logger.info( "{}, name: {} - exiting unlock()", this, name);
+        logger.info("{}, name: {} - exiting unlock()", this, name);
 
       }
     }
@@ -1883,8 +1883,8 @@ public class DLockService extends DistributedLockService {
     Assert.assertHoldsLock(services, true);
 
 
-      logger.info( "About to create DistributedLockService <{}>",
-          serviceName);
+    logger.info("About to create DistributedLockService <{}>",
+        serviceName);
 
 
     DLockService svc = new DLockService(serviceName, ds, isDistributed, destroyOnDisconnect,
@@ -1902,8 +1902,8 @@ public class DLockService extends DistributedLockService {
       this.ds.addDisconnectListener(disconnectListener);
       success = true;
 
-        logger.info( "Created DistributedLockService <{}>",
-            this.serviceName);
+      logger.info("Created DistributedLockService <{}>",
+          this.serviceName);
 
     } finally {
       if (!success) {
@@ -1964,7 +1964,7 @@ public class DLockService extends DistributedLockService {
   public void releaseTryLocks(DLockBatchId batchId, Callable<Boolean> untilCondition) {
 
 
-      logger.info( "[DLockService.releaseTryLocks] enter: {}", batchId);
+    logger.info("[DLockService.releaseTryLocks] enter: {}", batchId);
 
 
     long statStart = getStats().startLockRelease();
@@ -2002,7 +2002,7 @@ public class DLockService extends DistributedLockService {
       decActiveLocks();
       getStats().endLockRelease(statStart);
 
-        logger.info( "[DLockService.releaseTryLocks] exit: {}", batchId);
+      logger.info("[DLockService.releaseTryLocks] exit: {}", batchId);
 
     }
   }
@@ -2021,7 +2021,7 @@ public class DLockService extends DistributedLockService {
 
 
 
-      logger.info( "[acquireTryLocks] acquiring {}", dlockBatch);
+    logger.info("[acquireTryLocks] acquiring {}", dlockBatch);
 
 
     long requestWaitTime = waitTimeMillis;
@@ -2077,9 +2077,9 @@ public class DLockService extends DistributedLockService {
           keyIfFailed[0] = processor.getKeyIfFailed();
           if (keyIfFailed[0] == null) {
 
-              logger.info(
-                  "[acquireTryLocks] lock request failed but provided no conflict key; responseCode=",
-                  processor.getResponseCodeString());
+            logger.info(
+                "[acquireTryLocks] lock request failed but provided no conflict key; responseCode=",
+                processor.getResponseCodeString());
 
           } else {
             break;
@@ -2103,8 +2103,8 @@ public class DLockService extends DistributedLockService {
       }
 
 
-        logger.info( "[acquireTryLocks] {} locks for {}",
-            (gotLocks ? "acquired" : "failed to acquire"), dlockBatch);
+      logger.info("[acquireTryLocks] {} locks for {}",
+          (gotLocks ? "acquired" : "failed to acquire"), dlockBatch);
 
     } finally {
       getStats().endLockWait(statStart, gotLocks);
@@ -2207,8 +2207,8 @@ public class DLockService extends DistributedLockService {
         svc.destroyAndRemove();
       } catch (CancelException e) {
 
-          logger.info(
-              "destroyAndRemove of {} terminated due to cancellation: ", svc, e);
+        logger.info(
+            "destroyAndRemove of {} terminated due to cancellation: ", svc, e);
 
       }
     }
@@ -2280,9 +2280,9 @@ public class DLockService extends DistributedLockService {
     // synchronized (this.serviceLock) {
 
 
-      logger.info(
-          "[DLockService.basicDestroy] Destroying {}, isCurrentlyLockGrantor={}, isMakingLockGrantor={}",
-          this, isCurrentlyLockGrantor, isMakingLockGrantor);
+    logger.info(
+        "[DLockService.basicDestroy] Destroying {}, isCurrentlyLockGrantor={}, isMakingLockGrantor={}",
+        this, isCurrentlyLockGrantor, isMakingLockGrantor);
 
 
     // if hasActiveLocks, tell grantor we're destroying...
@@ -2328,8 +2328,8 @@ public class DLockService extends DistributedLockService {
           Thread.currentThread().interrupt();
         } catch (DistributedSystemDisconnectedException e) {
 
-            logger.info(
-                "No longer waiting for grantor because of disconnect.", e);
+          logger.info(
+              "No longer waiting for grantor because of disconnect.", e);
 
         }
       }
@@ -2387,8 +2387,8 @@ public class DLockService extends DistributedLockService {
               if (token.ignoreForRecovery()) {
                 // unlock of token must be in progress... ignore for recovery
 
-                  logger.info( "getLockTokensForRecovery is skipping {}",
-                      token);
+                logger.info("getLockTokensForRecovery is skipping {}",
+                    token);
 
               }
 
@@ -2459,7 +2459,7 @@ public class DLockService extends DistributedLockService {
         if (createNewToken) {
           this.tokens.put(name, token);
 
-            logger.info( "Creating {} in {}", token, this);
+          logger.info("Creating {} in {}", token, this);
 
           getStats().incTokens(1);
         }
@@ -2565,7 +2565,7 @@ public class DLockService extends DistributedLockService {
         public void onDisconnect(final InternalDistributedSystem sys) {
 
 
-            logger.info( "Shutting down Distributed Lock Services");
+          logger.info("Shutting down Distributed Lock Services");
 
           long start = System.currentTimeMillis();
           try {
@@ -2574,8 +2574,8 @@ public class DLockService extends DistributedLockService {
             closeStats();
             long delta = System.currentTimeMillis() - start;
 
-              logger.info( "Distributed Lock Services stopped (took {} ms)",
-                  delta);
+            logger.info("Distributed Lock Services stopped (took {} ms)",
+                delta);
 
           }
         }
@@ -2962,7 +2962,7 @@ public class DLockService extends DistributedLockService {
   static GrantorInfo checkLockGrantorInfo(String serviceName, InternalDistributedSystem system) {
     GrantorInfo gi = GrantorRequestProcessor.peekGrantor(serviceName, system);
 
-      logger.info( "[checkLockGrantorId] returning {}", gi);
+    logger.info("[checkLockGrantorId] returning {}", gi);
 
     return gi;
   }

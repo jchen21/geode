@@ -492,7 +492,7 @@ public class DLockGrantor {
 
 
 
-        logger.info( "[DLockGrantor.handleLockBatch]");
+      logger.info("[DLockGrantor.handleLockBatch]");
 
       if (!acquireDestroyReadLock(0)) {
         waitUntilDestroyed();
@@ -501,16 +501,16 @@ public class DLockGrantor {
       try {
         checkDestroyed();
 
-          logger.info( "[DLockGrantor.handleLockBatch] request: {}",
-              request);
+        logger.info("[DLockGrantor.handleLockBatch] request: {}",
+            request);
 
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
         checkIfHostDeparted(batch.getOwner());
         resMgr.makeReservation((IdentityArrayList) batch.getReqs());
 
-          logger.info( "[DLockGrantor.handleLockBatch] granting {}",
-              batch.getBatchId());
+        logger.info("[DLockGrantor.handleLockBatch] granting {}",
+            batch.getBatchId());
 
         this.batchLocks.put(batch.getBatchId(), batch);
         request.respondWithGrant(Long.MAX_VALUE);
@@ -600,7 +600,7 @@ public class DLockGrantor {
     DLockBatch ret = null;
 
 
-      logger.info( "[DLockGrantor.getLockBatch] enter: {}", batchId);
+    logger.info("[DLockGrantor.getLockBatch] enter: {}", batchId);
 
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -616,7 +616,7 @@ public class DLockGrantor {
       }
     }
 
-      logger.info( "[DLockGrantor.getLockBatch] exit: {}", batchId);
+    logger.info("[DLockGrantor.getLockBatch] exit: {}", batchId);
 
     return ret;
   }
@@ -637,7 +637,7 @@ public class DLockGrantor {
   public void updateLockBatch(Object batchId, DLockBatch newBatch) throws InterruptedException {
 
 
-      logger.info( "[DLockGrantor.updateLockBatch] enter: {}", batchId);
+    logger.info("[DLockGrantor.updateLockBatch] enter: {}", batchId);
 
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -656,7 +656,7 @@ public class DLockGrantor {
       }
     }
 
-      logger.info( "[DLockGrantor.updateLockBatch] exit: {}", batchId);
+    logger.info("[DLockGrantor.updateLockBatch] exit: {}", batchId);
 
   }
 
@@ -672,7 +672,7 @@ public class DLockGrantor {
   public void releaseLockBatch(Object batchId, InternalDistributedMember owner)
       throws InterruptedException {
 
-      logger.info( "[DLockGrantor.releaseLockBatch]");
+    logger.info("[DLockGrantor.releaseLockBatch]");
 
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -729,7 +729,7 @@ public class DLockGrantor {
    */
   DLockGrantToken handleLockQuery(DLockQueryMessage query) throws InterruptedException {
 
-      logger.info( "[DLockGrantor.handleLockQuery] {}", query);
+    logger.info("[DLockGrantor.handleLockQuery] {}", query);
 
     if (acquireDestroyReadLock(0)) {
       try {
@@ -762,22 +762,22 @@ public class DLockGrantor {
 
 
 
-      logger.info( "[DLockGrantor.handleLockRequest] {}", request);
+    logger.info("[DLockGrantor.handleLockRequest] {}", request);
 
 
     if (!acquireDestroyReadLock(0)) {
       if (isLocalRequest(request) && this.dlock.isDestroyed()) {
 
-          logger.info(
-              "[DLockGrantor.handleLockRequest] about to throwIfDestroyed");
+        logger.info(
+            "[DLockGrantor.handleLockRequest] about to throwIfDestroyed");
 
         // this special case is one fix for deadlock between waitUntilDestroyed
         // and dlock waitForGrantorCallsInProgress (when request is local)
         throwIfDestroyed(true);
       } else {
 
-          logger.info(
-              "[DLockGrantor.handleLockRequest] about to waitUntilDestroyed");
+        logger.info(
+            "[DLockGrantor.handleLockRequest] about to waitUntilDestroyed");
 
         // is there still a deadlock when an explicit become is destroying
         // this grantor instead of destroying the dlock service?
@@ -815,7 +815,7 @@ public class DLockGrantor {
    */
   private void handlePermittedLockRequest(final DLockRequestMessage request) {
 
-      logger.info( "[DLockGrantor.handlePermittedLockRequest] {}", request);
+    logger.info("[DLockGrantor.handlePermittedLockRequest] {}", request);
 
     Assert.assertTrue(request.getRemoteThread() != null);
     DLockGrantToken grant = getOrCreateGrant(request.getObjectName());
@@ -885,9 +885,9 @@ public class DLockGrantor {
             if (!members.contains(owner)) {
               // skipping because member is no longer in view
 
-                logger.info(
-                    "Initialization of held locks is skipping {} because owner {} is not in view: ",
-                    token, owner, members);
+              logger.info(
+                  "Initialization of held locks is skipping {} because owner {} is not in view: ",
+                  token, owner, members);
 
               continue;
             }
@@ -969,8 +969,8 @@ public class DLockGrantor {
       DLockGrantToken grant = getGrantToken(request.getObjectName());
       if (grant == null) {
 
-          logger.info(
-              "[DLockGrantor.reenterLock] no grantToken found for {}", request.getObjectName());
+        logger.info(
+            "[DLockGrantor.reenterLock] no grantToken found for {}", request.getObjectName());
 
         return 0;
       }
@@ -981,9 +981,9 @@ public class DLockGrantor {
         }
         if (!grant.isLockedBy(request.getSender(), request.getLockId())) {
 
-            logger.info(
-                "[DLockGrantor.reenterLock] grant is not locked by sender={} lockId={} grant={}",
-                request.getSender(), request.getLockId(), grant);
+          logger.info(
+              "[DLockGrantor.reenterLock] grant is not locked by sender={} lockId={} grant={}",
+              request.getSender(), request.getLockId(), grant);
 
           return 0;
         }
@@ -1102,24 +1102,24 @@ public class DLockGrantor {
       try {
         if (isDestroyed()) {
 
-            logger.info(
-                "[DLockGrantor.handleDepartureOf] grantor is destroyed; ignoring {}", owner);
+          logger.info(
+              "[DLockGrantor.handleDepartureOf] grantor is destroyed; ignoring {}", owner);
 
           return;
         }
         try {
           DLockLessorDepartureHandler handler = this.dlock.getDLockLessorDepartureHandler();
 
-            logger.info( "[DLockGrantor.handleDepartureOf] handler = {}",
-                handler);
+          logger.info("[DLockGrantor.handleDepartureOf] handler = {}",
+              handler);
 
           if (handler != null) {
             handler.handleDepartureOf(owner, this);
           }
         } catch (CancelException e) {
 
-            logger.info(
-                "[DlockGrantor.handleDepartureOf] ignored cancellation (1)");
+          logger.info(
+              "[DlockGrantor.handleDepartureOf] ignored cancellation (1)");
 
         } finally {
           synchronized (this.suspendLock) {
@@ -1136,8 +1136,8 @@ public class DLockGrantor {
                 postReleaseLock((RemoteThread) it.next(), null);
               } catch (CancelException e) {
 
-                  logger.info(
-                      "[DlockGrantor.handleDepartureOf] ignored cancellation (2)");
+                logger.info(
+                    "[DlockGrantor.handleDepartureOf] ignored cancellation (2)");
 
               }
             }
@@ -1155,8 +1155,8 @@ public class DLockGrantor {
                 grant.checkDepartureOf(owner, grantsReferencingMember);
               } catch (CancelException e) {
 
-                  logger.info(
-                      "[DlockGrantor.handleDepartureOf] ignored cancellation (3)");
+                logger.info(
+                    "[DlockGrantor.handleDepartureOf] ignored cancellation (3)");
 
               }
             } // for
@@ -1169,8 +1169,8 @@ public class DLockGrantor {
                 grant.handleDepartureOf(owner, grantsToRemoveIfUnused);
               } catch (CancelException e) {
 
-                  logger.info(
-                      "[DlockGrantor.handleDepartureOf] ignored cancellation (4)");
+                logger.info(
+                    "[DlockGrantor.handleDepartureOf] ignored cancellation (4)");
 
               }
             } // for
@@ -1183,8 +1183,8 @@ public class DLockGrantor {
                 removeGrantIfUnused(grant);
               } catch (CancelException e) {
 
-                  logger.info(
-                      "[DlockGrantor.handleDepartureOf] ignored cancellation (5)");
+                logger.info(
+                    "[DlockGrantor.handleDepartureOf] ignored cancellation (5)");
 
               }
             } // for
@@ -1207,7 +1207,7 @@ public class DLockGrantor {
         return;
 
 
-        logger.info( "[simpleDestroy]");
+      logger.info("[simpleDestroy]");
 
       // wait for the destroy write lock ignoring interrupts...
       boolean acquired = false;
@@ -1235,8 +1235,8 @@ public class DLockGrantor {
             }
           }
 
-            logger.info( "[simpleDestroy] {} locks held",
-                (locksHeld ? "with" : "without"));
+          logger.info("[simpleDestroy] {} locks held",
+              (locksHeld ? "with" : "without"));
 
         } finally {
           // make sure the following occurs even if checking locks above failed
@@ -1280,25 +1280,25 @@ public class DLockGrantor {
     synchronized (suspendLock) {
 
 
-        logger.info(
-            "[DLockGrantor.destroyAndRemove] responding to {} permitted requests.",
-            permittedRequests.size());
+      logger.info(
+          "[DLockGrantor.destroyAndRemove] responding to {} permitted requests.",
+          permittedRequests.size());
 
       respondWithNotGrantor(permittedRequests.iterator());
 
 
-        logger.info(
-            "[DLockGrantor.destroyAndRemove] responding to {} requests awaiting permission.",
-            suspendQueue.size());
+      logger.info(
+          "[DLockGrantor.destroyAndRemove] responding to {} requests awaiting permission.",
+          suspendQueue.size());
 
       respondWithNotGrantor(suspendQueue.iterator());
 
       for (Iterator iter = permittedRequestsDrain.iterator(); iter.hasNext();) {
         final List drain = (List) iter.next();
 
-          logger.info(
-              "[DLockGrantor.destroyAndRemove] responding to {} drained permitted requests.",
-              drain.size());
+        logger.info(
+            "[DLockGrantor.destroyAndRemove] responding to {} drained permitted requests.",
+            drain.size());
 
         respondWithNotGrantor(drain.iterator());
       }
@@ -1338,12 +1338,12 @@ public class DLockGrantor {
     }
     assertInitializing();
 
-      StringBuffer sb =
-          new StringBuffer("DLockGrantor " + this.dlock.getName() + " initialized with:");
-      for (Iterator tokens = grantTokens.values().iterator(); tokens.hasNext();) {
-        sb.append("\n\t" + tokens.next());
-      }
-      logger.info( sb.toString());
+    StringBuffer sb =
+        new StringBuffer("DLockGrantor " + this.dlock.getName() + " initialized with:");
+    for (Iterator tokens = grantTokens.values().iterator(); tokens.hasNext();) {
+      sb.append("\n\t" + tokens.next());
+    }
+    logger.info(sb.toString());
 
     this.state = READY;
     this.whileInitializing.countDown();
@@ -1470,8 +1470,8 @@ public class DLockGrantor {
       this.thread.shutdown();
       this.state = DESTROYED;
 
-        logger.info( "DLockGrantor {} state is DESTROYED",
-            this.dlock.getName());
+      logger.info("DLockGrantor {} state is DESTROYED",
+          this.dlock.getName());
 
       if (this.untilDestroyed.getCount() > 0) {
         this.untilDestroyed.countDown();
@@ -1630,8 +1630,8 @@ public class DLockGrantor {
       Assert.assertTrue(removed == grantToken);
       grantToken.destroy();
 
-        logger.info(
-            "[DLockGrantor.basicRemoveGrantToken] removed {}; removed={}", grantToken, removed);
+      logger.info(
+          "[DLockGrantor.basicRemoveGrantToken] removed {}; removed={}", grantToken, removed);
 
     }
   }
@@ -1836,8 +1836,8 @@ public class DLockGrantor {
       Assert.assertHoldsLock(this.suspendLock, true);
     }
 
-      logger.info( "Suspend locking of {} by {} with lockId of {}",
-          this.dlock, myRThread, lockId);
+    logger.info("Suspend locking of {} by {} with lockId of {}",
+        this.dlock, myRThread, lockId);
 
     Assert.assertTrue(myRThread != null, "Attempted to suspend locking for null RemoteThread");
     Assert.assertTrue(this.lockingSuspendedBy == null || this.lockingSuspendedBy.equals(myRThread),
@@ -1857,7 +1857,7 @@ public class DLockGrantor {
       Assert.assertHoldsLock(this.suspendLock, true);
     }
 
-      logger.info( "Resume locking of {}", this.dlock);
+    logger.info("Resume locking of {}", this.dlock);
 
     this.lockingSuspendedBy = null;
     this.suspendedLockId = INVALID_LOCK_ID;
@@ -1942,8 +1942,8 @@ public class DLockGrantor {
     if (!isLockingSuspendedBy(rThread)) {
       // hit bug related to 35749
 
-        logger.info(
-            "[postReleaseSuspendLock] locking is no longer suspended by {}", rThread);
+      logger.info(
+          "[postReleaseSuspendLock] locking is no longer suspended by {}", rThread);
 
       return;
     }
@@ -1984,8 +1984,8 @@ public class DLockGrantor {
       }
     }
 
-      logger.info( "[postReleaseSuspendLock] new status {}",
-          displayStatus(rThread, null));
+    logger.info("[postReleaseSuspendLock] new status {}",
+        displayStatus(rThread, null));
 
   }
 
@@ -2002,8 +2002,8 @@ public class DLockGrantor {
     if (readLockCount < 1) {
       // hit bug 35749
 
-        logger.info(
-            "[postReleaseReadLock] no locks are currently held by {}", rThread);
+      logger.info(
+          "[postReleaseReadLock] no locks are currently held by {}", rThread);
 
       return;
     }
@@ -2018,8 +2018,8 @@ public class DLockGrantor {
 
     if (totalReadLockCount < 0) {
 
-        logger.info( "Total readlock count has dropped to {} for {}",
-            totalReadLockCount, this);
+      logger.info("Total readlock count has dropped to {} for {}",
+          totalReadLockCount, this);
 
     }
     if (totalReadLockCount == 0 && !suspendQueue.isEmpty()) {
@@ -2042,8 +2042,8 @@ public class DLockGrantor {
       }
     }
 
-      logger.info( "[postReleaseReadLock] new status {}",
-          displayStatus(rThread, null));
+    logger.info("[postReleaseReadLock] new status {}",
+        displayStatus(rThread, null));
 
     checkTotalReadLockCount();
   }
@@ -2061,9 +2061,9 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
 
-        logger.info(
-            "[postReleaseLock] rThread={} lock={} permittedRequests={} suspendQueue={}", rThread,
-            lock, permittedRequests, suspendQueue);
+      logger.info(
+          "[postReleaseLock] rThread={} lock={} permittedRequests={} suspendQueue={}", rThread,
+          lock, permittedRequests, suspendQueue);
 
       if (DLockService.SUSPEND_LOCKING_TOKEN.equals(lock)) {
         postReleaseSuspendLock(rThread, lock);
@@ -2109,7 +2109,7 @@ public class DLockGrantor {
 
 
 
-      logger.info( "[drainPermittedRequests] draining {}", drain);
+    logger.info("[drainPermittedRequests] draining {}", drain);
 
 
     // iterate and attempt to grantOrSchedule each request
@@ -2121,8 +2121,8 @@ public class DLockGrantor {
       } catch (LockGrantorDestroyedException e) {
         try {
 
-            logger.info(
-                "LockGrantorDestroyedException respondWithNotGrantor to {}", request);
+          logger.info(
+              "LockGrantorDestroyedException respondWithNotGrantor to {}", request);
 
           request.respondWithNotGrantor();
         } finally {
@@ -2131,8 +2131,8 @@ public class DLockGrantor {
       } catch (LockServiceDestroyedException e) {
         try {
 
-            logger.info(
-                "LockServiceDestroyedException respondWithNotGrantor to {}", request);
+          logger.info(
+              "LockServiceDestroyedException respondWithNotGrantor to {}", request);
 
           request.respondWithNotGrantor();
         } finally {
@@ -2178,22 +2178,22 @@ public class DLockGrantor {
         this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
         checkWriteLockWaiters();
 
-          logger.info(
-              "[DLockGrantor.acquireSuspend] added '{}' to end of suspendQueue.", request);
+        logger.info(
+            "[DLockGrantor.acquireSuspend] added '{}' to end of suspendQueue.", request);
 
       } else {
         permitLockRequest = true;
         suspendLocking(rThread, request.getLockId());
 
-          logger.info(
-              "[DLockGrantor.acquireSuspendLockPermission] permitted and suspended for {}",
-              request);
+        logger.info(
+            "[DLockGrantor.acquireSuspendLockPermission] permitted and suspended for {}",
+            request);
 
       }
 
-        logger.info(
-            "[DLockGrantor.acquireSuspendLockPermission] new status  permitLockRequest = {}{}",
-            permitLockRequest, displayStatus(rThread, null));
+      logger.info(
+          "[DLockGrantor.acquireSuspendLockPermission] new status  permitLockRequest = {}{}",
+          permitLockRequest, displayStatus(rThread, null));
 
     } // suspendLock sync
     return permitLockRequest;
@@ -2220,8 +2220,8 @@ public class DLockGrantor {
         suspendQueue.addLast(request);
         this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
 
-          logger.info(
-              "[DLockGrantor.acquireReadLockPermission] added {} to end of suspendQueue.", request);
+        logger.info(
+            "[DLockGrantor.acquireReadLockPermission] added {} to end of suspendQueue.", request);
 
       } else {
         readLockCount++;
@@ -2229,14 +2229,14 @@ public class DLockGrantor {
         totalReadLockCount++;
         permitLockRequest = true;
 
-          logger.info(
-              "[DLockGrantor.acquireReadLockPermission] permitted {}", request);
+        logger.info(
+            "[DLockGrantor.acquireReadLockPermission] permitted {}", request);
 
       }
 
-        logger.info(
-            "[DLockGrantor.acquireReadLockPermission] new status  threadHoldsLock = {} permitLockRequest = {}{}",
-            threadHoldsLock, permitLockRequest, displayStatus(rThread, null));
+      logger.info(
+          "[DLockGrantor.acquireReadLockPermission] new status  threadHoldsLock = {} permitLockRequest = {}{}",
+          threadHoldsLock, permitLockRequest, displayStatus(rThread, null));
 
       checkTotalReadLockCount();
     } // suspendLock sync
@@ -2253,7 +2253,7 @@ public class DLockGrantor {
    */
   private boolean acquireLockPermission(final DLockRequestMessage request) {
 
-      logger.info( "[DLockGrantor.acquireLockPermission] {}", request);
+    logger.info("[DLockGrantor.acquireLockPermission] {}", request);
 
 
     boolean permitLockRequest = false;
@@ -2456,8 +2456,8 @@ public class DLockGrantor {
 
       // add the request to the sorted set...
 
-        logger.info( "[DLockGrantToken.schedule] {} scheduling: {}", this,
-            request);
+      logger.info("[DLockGrantToken.schedule] {} scheduling: {}", this,
+          request);
 
       if (this.pendingRequests == null) {
         this.pendingRequests = new LinkedList();
@@ -2543,8 +2543,8 @@ public class DLockGrantor {
       }
 
 
-        logger.info( "[DLockGrantToken.grantLockToRequest] granting: {}",
-            request);
+      logger.info("[DLockGrantToken.grantLockToRequest] granting: {}",
+          request);
 
 
       long newLeaseExpireTime = grantAndRespondToRequest(request);
@@ -2586,11 +2586,11 @@ public class DLockGrantor {
       if (released) {
         // don't bother synchronizing requests for this log statement...
 
-          synchronized (this) {
-            logger.info(
-                "[DLockGrantToken.releaseIfLockedBy] pending requests: {}",
-                (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
-          }
+        synchronized (this) {
+          logger.info(
+              "[DLockGrantToken.releaseIfLockedBy] pending requests: {}",
+              (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
+        }
 
         Assert.assertTrue(rThread != null);
         // releaseIfLockedBy (remote unlock)
@@ -2687,8 +2687,8 @@ public class DLockGrantor {
                   this.grantor.cleanupSuspendState(req);
                 } catch (CancelException e) {
 
-                    logger.info(
-                        "[DLockGrantToken.handleDepartureOf] ignored cancellation (1)");
+                  logger.info(
+                      "[DLockGrantToken.handleDepartureOf] ignored cancellation (1)");
 
                 }
                 // remove the request
@@ -2713,9 +2713,9 @@ public class DLockGrantor {
               if (releasedToken) {
                 released = true;
 
-                  logger.info(
-                      "[DLockGrantToken.handleDepartureOf] pending requests: {}",
-                      (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
+                logger.info(
+                    "[DLockGrantToken.handleDepartureOf] pending requests: {}",
+                    (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
 
                 Assert.assertTrue(rThread != null);
               }
@@ -2728,8 +2728,8 @@ public class DLockGrantor {
             this.grantor.postReleaseLock(rThread, getName());
           } catch (CancelException e) {
 
-              logger.info(
-                  "[DLockGrantToken.handleDepartureOf] ignored cancellation (2)");
+            logger.info(
+                "[DLockGrantToken.handleDepartureOf] ignored cancellation (2)");
 
           }
           this.grantor.drainPermittedRequests(); // destroyReadLock{grant{}, suspendLock{}}
@@ -2796,9 +2796,9 @@ public class DLockGrantor {
     protected boolean grantLockToNextRequest() {
 
 
-        logger.info(
-            "[DLockGrantToken.grantLock] {} isGranted={} hasWaitingRequests={}", getName(),
-            isLeaseHeld(), hasWaitingRequests());
+      logger.info(
+          "[DLockGrantToken.grantLock] {} isGranted={} hasWaitingRequests={}", getName(),
+          isLeaseHeld(), hasWaitingRequests());
 
 
       while (!isGranted(true) && hasWaitingRequests()) {
@@ -2817,8 +2817,8 @@ public class DLockGrantor {
           }
 
 
-            logger.info( "[DLockGrantToken.grantLock] granting {} to {}",
-                getName(), request.getSender());
+          logger.info("[DLockGrantToken.grantLock] granting {} to {}",
+              getName(), request.getSender());
 
 
           long newLeaseExpireTime = grantAndRespondToRequest(request);
@@ -2917,9 +2917,9 @@ public class DLockGrantor {
         newLeaseExpireTime = Long.MAX_VALUE;
       }
 
-        logger.info(
-            "[DLockGrantToken.calcLeaseExpireTime] currentTime={} newLeaseExpireTime={}",
-            currentTime, newLeaseExpireTime);
+      logger.info(
+          "[DLockGrantToken.calcLeaseExpireTime] currentTime={} newLeaseExpireTime={}",
+          currentTime, newLeaseExpireTime);
 
       return newLeaseExpireTime;
     }
@@ -3158,8 +3158,8 @@ public class DLockGrantor {
           this.leaseExpireTime = -1;
 
 
-            logger.info( "[checkForExpiration] Expired token at {}: {}",
-                currentTime, toString(true));
+          logger.info("[checkForExpiration] Expired token at {}: {}",
+              currentTime, toString(true));
 
 
           this.grantor.postReleaseLock(rThread, this.lockName);
@@ -3206,8 +3206,8 @@ public class DLockGrantor {
       this.leaseId = lockId;
       this.lesseeThread = remoteThread;
 
-        logger.info( "[DLockGrantToken.grantLock.grantor] Granting {}",
-            toString(false));
+      logger.info("[DLockGrantToken.grantLock.grantor] Granting {}",
+          toString(false));
 
     }
 
@@ -3271,8 +3271,8 @@ public class DLockGrantor {
 
       if (isLeaseHeldBy(member, lockId)) {
 
-          logger.info(
-              "[DLockGrantToken.releaseLock] releasing ownership: {}", this);
+        logger.info(
+            "[DLockGrantToken.releaseLock] releasing ownership: {}", this);
 
 
         this.lessee = null;
@@ -3283,8 +3283,8 @@ public class DLockGrantor {
         return true;
       }
 
-        logger.info(
-            "[DLockGrantToken.releaseLock] {} attempted to release: {}", member, this);
+      logger.info(
+          "[DLockGrantToken.releaseLock] {} attempted to release: {}", member, this);
 
       return false;
     }
@@ -3414,22 +3414,22 @@ public class DLockGrantor {
                 if (this.timeToWait < 0)
                   this.timeToWait = 0;
 
-                  logger.info(
-                      "DLockGrantorThread will wait for {} ms. nextExpire={} nextTimeout={} now={}",
-                      this.timeToWait, this.nextExpire, this.nextTimeout, now);
+                logger.info(
+                    "DLockGrantorThread will wait for {} ms. nextExpire={} nextTimeout={} now={}",
+                    this.timeToWait, this.nextExpire, this.nextTimeout, now);
 
               } else {
                 this.timeToWait = Long.MAX_VALUE;
 
-                  logger.info(
-                      "DLockGrantorThread will wait until rescheduled.");
+                logger.info(
+                    "DLockGrantorThread will wait until rescheduled.");
 
               }
             }
             if (this.timeToWait > 0) {
 
-                logger.info(
-                    "DLockGrantorThread is about to wait for {} ms.", this.timeToWait);
+              logger.info(
+                  "DLockGrantorThread is about to wait for {} ms.", this.timeToWait);
 
               if (this.timeToWait != Long.MAX_VALUE) {
                 this.expectedWakeupTimeStamp = now() + this.timeToWait;
@@ -3460,7 +3460,7 @@ public class DLockGrantor {
                 }
               }
 
-                logger.info( "DLockGrantorThread has woken up...");
+              logger.info("DLockGrantorThread has woken up...");
 
               if (this.shutdown)
                 break;
@@ -3480,8 +3480,8 @@ public class DLockGrantor {
               return;
             }
 
-              logger.info(
-                  "DLockGrantorThread about to expireAndGrantLocks...");
+            logger.info(
+                "DLockGrantorThread about to expireAndGrantLocks...");
 
             {
               long smallestExpire = this.grantor.expireAndGrantLocks(grants.iterator());
@@ -3499,8 +3499,8 @@ public class DLockGrantor {
               return;
             }
 
-              logger.info(
-                  "DLockGrantorThread about to handleRequestTimeouts...");
+            logger.info(
+                "DLockGrantorThread about to handleRequestTimeouts...");
 
             {
               long smallestRequestTimeout = this.grantor.handleRequestTimeouts(grants.iterator());
@@ -3521,8 +3521,8 @@ public class DLockGrantor {
               return;
             }
 
-              logger.info(
-                  "DLockGrantorThread about to removeUnusedGrants...");
+            logger.info(
+                "DLockGrantorThread about to removeUnusedGrants...");
 
             this.grantor.removeUnusedGrants(grants.iterator());
             stats.endGrantorThreadRemoveUnusedTokens(timing);
@@ -3587,8 +3587,8 @@ public class DLockGrantor {
 
       try {
 
-          logger.info(
-              "[DLockGrantor.memberDeparted] waiting thread pool will process id={}", id);
+        logger.info(
+            "[DLockGrantor.memberDeparted] waiting thread pool will process id={}", id);
 
         distMgr.getExecutors().getWaitingThreadPool().execute(new Runnable() {
           @Override
@@ -3598,15 +3598,15 @@ public class DLockGrantor {
             } catch (InterruptedException e) {
               // ignore
 
-                logger.info( "Ignored interrupt processing departed member");
+              logger.info("Ignored interrupt processing departed member");
 
             }
           }
         });
       } catch (RejectedExecutionException e) {
 
-          logger.info(
-              "[DLockGrantor.memberDeparted] rejected handling of id={}", id);
+        logger.info(
+            "[DLockGrantor.memberDeparted] rejected handling of id={}", id);
 
       }
     }
@@ -3614,7 +3614,7 @@ public class DLockGrantor {
     protected void processMemberDeparted(InternalDistributedMember id, boolean crashed,
         DLockGrantor me) throws InterruptedException {
 
-        logger.info( "[DLockGrantor.processMemberDeparted] id={}", id);
+      logger.info("[DLockGrantor.processMemberDeparted] id={}", id);
 
       try {
         me.waitWhileInitializing();
