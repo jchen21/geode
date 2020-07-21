@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -120,8 +119,8 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(oldGrantor);
 
-        logger.info("DeposeGrantorMessage sending {} to {}", msg,
-            oldGrantor);
+      logger.info("DeposeGrantorMessage sending {} to {}", msg,
+          oldGrantor);
 
       dm.putOutgoing(msg);
     }

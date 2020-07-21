@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -143,16 +142,16 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       switch (reply.replyCode) {
         case DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE:
 
-            logger.info( "Failed DLockRecoverGrantorReplyMessage: '{}'",
-                reply);
+          logger.info("Failed DLockRecoverGrantorReplyMessage: '{}'",
+              reply);
 
           this.error = true;
           break;
         case DLockRecoverGrantorReplyMessage.OK:
           // collect results...
 
-            logger.info( "Processing DLockRecoverGrantorReplyMessage: '{}'",
-                reply);
+          logger.info("Processing DLockRecoverGrantorReplyMessage: '{}'",
+              reply);
 
 
           Set lockSet = new HashSet();
@@ -175,9 +174,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       // maybe build up another reply to indicate lock recovery status?
     } catch (IllegalStateException e) {
 
-        logger.info(
-            "Processing of DLockRecoverGrantorReplyMessage {} resulted in {}", msg, e.getMessage(),
-            e);
+      logger.info(
+          "Processing of DLockRecoverGrantorReplyMessage {} resulted in {}", msg, e.getMessage(),
+          e);
 
     } finally {
       super.process(msg);
@@ -436,14 +435,14 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
         if (msg.getSender().equals(dm.getId())) {
           // process in-line in this VM
 
-            logger.info(
-                "[DLockRecoverGrantorMessage.process] locally process reply");
+          logger.info(
+              "[DLockRecoverGrantorMessage.process] locally process reply");
 
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
 
-            logger.info( "[DLockRecoverGrantorMessage.process] send reply");
+          logger.info("[DLockRecoverGrantorMessage.process] send reply");
 
           dm.putOutgoing(replyMsg);
         }

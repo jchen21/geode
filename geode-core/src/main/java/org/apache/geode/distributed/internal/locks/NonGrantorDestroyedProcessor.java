@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -120,8 +119,8 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
       msg.setRecipient(grantor);
 
 
-        logger.info( "NonGrantorDestroyedMessage sending {} to {}", msg,
-            grantor);
+      logger.info("NonGrantorDestroyedMessage sending {} to {}", msg,
+          grantor);
 
 
       if (grantor.equals(dm.getId())) {
@@ -169,20 +168,20 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
 
-          logger.info(
-              "Processing of NonGrantorDestroyedMessage resulted in InterruptedException", e);
+        logger.info(
+            "Processing of NonGrantorDestroyedMessage resulted in InterruptedException", e);
 
       } catch (LockServiceDestroyedException e) {
 
-          logger.info(
-              "Processing of NonGrantorDestroyedMessage resulted in LockServiceDestroyedException",
-              e);
+        logger.info(
+            "Processing of NonGrantorDestroyedMessage resulted in LockServiceDestroyedException",
+            e);
 
       } catch (LockGrantorDestroyedException e) {
 
-          logger.info(
-              "Processing of NonGrantorDestroyedMessage resulted in LockGrantorDestroyedException",
-              e);
+        logger.info(
+            "Processing of NonGrantorDestroyedMessage resulted in LockGrantorDestroyedException",
+            e);
 
       } finally {
         if (!replied) {

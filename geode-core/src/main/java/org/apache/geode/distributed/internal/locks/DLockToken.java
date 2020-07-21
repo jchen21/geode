@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -280,8 +279,8 @@ public class DLockToken {
       long currentTime = getCurrentTime();
       if (currentTime > this.leaseExpireTime) {
 
-          logger.info( "[checkForExpiration] Expiring token at {}: {}",
-              currentTime, this);
+        logger.info("[checkForExpiration] Expiring token at {}: {}",
+            currentTime, this);
 
         noteExpiredLease();
         basicReleaseLock();
@@ -318,7 +317,7 @@ public class DLockToken {
     this.thread = Thread.currentThread();
 
 
-      logger.info( "[DLockToken.grantLock.client] granted {}", this);
+    logger.info("[DLockToken.grantLock.client] granted {}", this);
 
   }
 
@@ -415,8 +414,8 @@ public class DLockToken {
       incRecursion(-1);
       decUsage();
 
-        logger.info( "[DLockToken.releaseLock] decremented recursion: {}",
-            this);
+      logger.info("[DLockToken.releaseLock] decremented recursion: {}",
+          this);
 
       return true;
     }
@@ -434,8 +433,8 @@ public class DLockToken {
    */
   private void basicReleaseLock() {
 
-      logger.info( "[DLockToken.basicReleaseLock] releasing ownership: {}",
-          this);
+    logger.info("[DLockToken.basicReleaseLock] releasing ownership: {}",
+        this);
 
 
     this.leaseId = -1;
@@ -512,7 +511,7 @@ public class DLockToken {
    */
   private void noteExpiredLease() {
 
-      logger.info( "[noteExpiredLease] {}", this.thread);
+    logger.info("[noteExpiredLease] {}", this.thread);
 
     if (this.expiredLeases == null) {
       this.expiredLeases = new WeakHashMap();

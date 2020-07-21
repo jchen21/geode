@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockGrantor.DLockGrantToken;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -116,7 +115,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     try {
       DLockQueryReplyMessage myReply = (DLockQueryReplyMessage) msg;
 
-        logger.info( "Handling: {}", myReply);
+      logger.info("Handling: {}", myReply);
 
       this.reply = myReply;
     } finally {
@@ -183,7 +182,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
         if (failed) {
           // above code failed so now ensure reply is sent
 
-            logger.info( "DLockQueryMessage.process failed for <{}>", this);
+          logger.info("DLockQueryMessage.process failed for <{}>", this);
 
           DLockQueryReplyMessage replyMsg = new DLockQueryReplyMessage();
           replyMsg.setProcessorId(this.processorId);
@@ -218,7 +217,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
         @Override
         public void run() {
 
-            logger.info( "[executeBasicProcess] {}", msg);
+          logger.info("[executeBasicProcess] {}", msg);
 
           basicProcess(dm, true);
         }
@@ -233,7 +232,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
 
 
-        logger.info( "[basicProcess] {}", this);
+      logger.info("[basicProcess] {}", this);
 
       final DLockQueryReplyMessage replyMsg = new DLockQueryReplyMessage();
       replyMsg.setProcessorId(this.processorId);
@@ -287,7 +286,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       } catch (RuntimeException e) {
         replyMsg.setException(new ReplyException(e));
 
-          logger.info( "[basicProcess] caught RuntimeException", e);
+        logger.info("[basicProcess] caught RuntimeException", e);
 
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -303,7 +302,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
         SystemFailure.checkFailure();
         replyMsg.setException(new ReplyException(e));
 
-          logger.info( "[basicProcess] caught Error", e);
+        logger.info("[basicProcess] caught Error", e);
 
       } finally {
         if (dm.getId().equals(getSender())) {
