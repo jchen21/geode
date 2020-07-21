@@ -58,13 +58,13 @@ public class ElderState {
         throw e;
       }
     } finally {
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+
         StringBuilder sb = new StringBuilder("ElderState initialized with:");
         for (String key : this.nameToInfo.keySet()) {
           sb.append("\n\t").append(key).append(": ").append(this.nameToInfo.get(key));
         }
-        logger.trace(LogMarker.DLS_VERBOSE, sb.toString());
-      }
+        logger.info( sb.toString());
+
     }
   }
 
@@ -107,11 +107,11 @@ public class ElderState {
             && this.dm.getDistributionManagerIds().contains(currentGrantor)) {
           return gi;
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Elder setting grantor for {} to {} because {} ",
+
+            logger.info( "Elder setting grantor for {} to {} because {} ",
                 serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
                     : "of unclean grantor shutdown"));
-          }
+
           // current grantor crashed; make new member grantor and force recovery
           long myVersion = gi.getVersionId() + 1;
           this.nameToInfo.put(serviceName,
@@ -119,11 +119,11 @@ public class ElderState {
           return new GrantorInfo(requestor, myVersion, dlsSerialNumberRequestor, true);
         }
       } else {
-        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+
+          logger.info(
               "Elder setting grantor for {} to {} because of clean grantor shutdown", serviceName,
               requestor);
-        }
+
         gi = new GrantorInfo(requestor, 1, dlsSerialNumberRequestor, false);
         this.nameToInfo.put(serviceName, gi);
         return gi;
@@ -193,20 +193,20 @@ public class ElderState {
 
               // problem: specified oldTurk is not previousGrantor...
               if (oldTurk != null && !oldTurk.equals(previousGrantor)) {
-                if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                  logger.trace(LogMarker.DLS_VERBOSE,
+
+                  logger.info(
                       "Elder did not become grantor for {} to {} because oldT was {} and the current grantor is {}",
                       serviceName, newGrantor, oldTurk, previousGrantor);
-                }
+
               }
 
               // no oldTurk or oldTurk matches previousGrantor... transfer might occur
               else {
                 // install new grantor
-                if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                  logger.trace(LogMarker.DLS_VERBOSE, "Elder forced to set grantor for {} to {}",
+
+                  logger.info( "Elder forced to set grantor for {} to {}",
                       serviceName, newGrantor);
-                }
+
                 long myVersion = gi.getVersionId() + 1;
                 newGrantorVersion = myVersion;
                 newInfo = new GrantorInfo(newGrantor, myVersion, newGrantorSerialNumber, false);
@@ -229,20 +229,20 @@ public class ElderState {
 
             // problem: oldTurk was specified but there is no previousGrantor...
             if (oldTurk != null) {
-              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                logger.trace(LogMarker.DLS_VERBOSE,
+
+                logger.info(
                     "Elder did not become grantor for {} to {} because oldT was {} and the current grantor {} had crashed",
                     serviceName, newGrantor, oldTurk, previousGrantor);
-              }
+
             }
 
             // no oldTurk was specified...
             else {
-              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-                logger.trace(LogMarker.DLS_VERBOSE,
+
+                logger.info(
                     "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
                     serviceName, newGrantor);
-              }
+
               // current grantor crashed; make new member grantor and force recovery
               this.nameToInfo.put(serviceName,
                   new GrantorInfo(newGrantor, myVersion, newGrantorSerialNumber, false));
@@ -256,20 +256,20 @@ public class ElderState {
         else {
           // problem: no oldTurk was specified
           if (oldTurk != null) {
-            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-              logger.trace(LogMarker.DLS_VERBOSE,
+
+              logger.info(
                   "Elder did not become grantor for {} to {} because oldT was {} and elder had no current grantor",
                   serviceName, newGrantor, oldTurk);
-            }
+
           }
 
           // no oldTurk was specified
           else {
-            if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-              logger.trace(LogMarker.DLS_VERBOSE,
+
+              logger.info(
                   "Elder forced to set grantor for {} to {} because of clean grantor shutdown",
                   serviceName, newGrantor);
-            }
+
             // no current grantor; last one shutdown cleanly
             gi = new GrantorInfo(newGrantor, 1, newGrantorSerialNumber, false);
             this.nameToInfo.put(serviceName, gi);
@@ -324,16 +324,16 @@ public class ElderState {
         InternalDistributedMember currentGrantor = gi.getId();
         if (!oldGrantor.equals(currentGrantor)) { // fix for 32603
           this.nameToInfo.put(serviceName, gi);
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "Elder not making {} grantor shutdown for {} by {} because the current grantor is {}",
                 (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor, currentGrantor);
-          }
+
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "Elder making {} grantor shutdown for {} by {}",
+
+            logger.info( "Elder making {} grantor shutdown for {} by {}",
                 (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor);
-          }
+
         }
       }
     }

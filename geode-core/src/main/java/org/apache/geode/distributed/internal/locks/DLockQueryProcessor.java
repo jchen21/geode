@@ -115,9 +115,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
   public void process(DistributionMessage msg) {
     try {
       DLockQueryReplyMessage myReply = (DLockQueryReplyMessage) msg;
-      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        logger.trace(LogMarker.DLS_VERBOSE, "Handling: {}", myReply);
-      }
+
+        logger.info( "Handling: {}", myReply);
+
       this.reply = myReply;
     } finally {
       super.process(msg);
@@ -182,9 +182,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       } finally {
         if (failed) {
           // above code failed so now ensure reply is sent
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "DLockQueryMessage.process failed for <{}>", this);
-          }
+
+            logger.info( "DLockQueryMessage.process failed for <{}>", this);
+
           DLockQueryReplyMessage replyMsg = new DLockQueryReplyMessage();
           replyMsg.setProcessorId(this.processorId);
           replyMsg.setRecipient(getSender());
@@ -217,9 +217,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "[executeBasicProcess] {}", msg);
-          }
+
+            logger.info( "[executeBasicProcess] {}", msg);
+
           basicProcess(dm, true);
         }
       });
@@ -231,10 +231,10 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
      * this.svc and this.grantor must be set before calling this method.
      */
     protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] {}", this);
-      }
+
+
+        logger.info( "[basicProcess] {}", this);
+
       final DLockQueryReplyMessage replyMsg = new DLockQueryReplyMessage();
       replyMsg.setProcessorId(this.processorId);
       replyMsg.setRecipient(getSender());
@@ -286,9 +286,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       } catch (LockGrantorDestroyedException | LockServiceDestroyedException ignore) {
       } catch (RuntimeException e) {
         replyMsg.setException(new ReplyException(e));
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] caught RuntimeException", e);
-        }
+
+          logger.info( "[basicProcess] caught RuntimeException", e);
+
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -302,9 +302,9 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
         // is still usable:
         SystemFailure.checkFailure();
         replyMsg.setException(new ReplyException(e));
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] caught Error", e);
-        }
+
+          logger.info( "[basicProcess] caught Error", e);
+
       } finally {
         if (dm.getId().equals(getSender())) {
           replyMsg.setSender(getSender());

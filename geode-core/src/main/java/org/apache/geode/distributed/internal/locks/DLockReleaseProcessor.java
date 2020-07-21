@@ -104,25 +104,25 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
           "DLockReleaseProcessor is unable to process message of type " + msg.getClass());
 
       DLockReleaseReplyMessage myReply = (DLockReleaseReplyMessage) msg;
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "Handling: {}", myReply);
-      }
+
+
+        logger.info( "Handling: {}", myReply);
+
       this.reply = myReply;
 
-      if (isDebugEnabled_DLS) {
+
         // grantor acknowledged release of lock...
         if (myReply.replyCode == DLockReleaseReplyMessage.OK) {
-          logger.trace(LogMarker.DLS_VERBOSE, "Successfully released {} in {}", this.objectName,
+          logger.info( "Successfully released {} in {}", this.objectName,
               myReply.serviceName);
         }
         // sender denies being the grantor...
         else if (myReply.replyCode == DLockReleaseReplyMessage.NOT_GRANTOR) {
-          logger.trace(LogMarker.DLS_VERBOSE,
+          logger.info(
               "{} has responded DLockReleaseReplyMessage.NOT_GRANTOR for {}", myReply.getSender(),
               myReply.serviceName);
         }
-      }
+
     } finally {
       super.process(msg);
     }
@@ -189,10 +189,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       } finally {
         if (failed) {
           // above code failed so now ensure reply is sent
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "DLockReleaseMessage.process failed for <{}>",
+
+            logger.info( "DLockReleaseMessage.process failed for <{}>",
                 this);
-          }
+
           int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
           DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
           replyMsg.serviceName = this.serviceName;
@@ -228,9 +228,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "[executeBasicProcess] waitForGrantor {}", msg);
-          }
+
+            logger.info( "[executeBasicProcess] waitForGrantor {}", msg);
+
           basicProcess(dm, true);
         }
       });
@@ -242,10 +242,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
      * this.svc and this.grantor must be set before calling this method.
      */
     protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] {}", this);
-      }
+
+
+        logger.info( "[basicProcess] {}", this);
+
       int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
       ReplyException replyException = null;
       try {
@@ -281,9 +281,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       } catch (LockServiceDestroyedException ignore) {
       } catch (RuntimeException e) {
         replyException = new ReplyException(e);
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] caught RuntimeException", e);
-        }
+
+          logger.info( "[basicProcess] caught RuntimeException", e);
+
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -297,9 +297,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         // is still usable:
         SystemFailure.checkFailure();
         replyException = new ReplyException(e);
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS_VERBOSE, "[basicProcess] caught Error", e);
-        }
+
+          logger.info( "[basicProcess] caught Error", e);
+
       } finally {
         DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
         replyMsg.serviceName = this.serviceName;
@@ -327,12 +327,12 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
           }
         } // grantor != null
         else {
-          if (DLockGrantor.DEBUG_SUSPEND_LOCK && isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS_VERBOSE,
+
+            logger.info(
                 "DLockReleaseMessage, omitted postRemoteRelease lock on " + objectName
                     + "; grantor = " + grantor + ", lockBatch = " + lockBatch + ", replyMsg = "
                     + replyMsg);
-          }
+
         }
       }
     }
