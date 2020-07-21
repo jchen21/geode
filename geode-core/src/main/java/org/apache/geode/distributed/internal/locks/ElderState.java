@@ -59,11 +59,11 @@ public class ElderState {
       }
     } finally {
 
-        StringBuilder sb = new StringBuilder("ElderState initialized with:");
-        for (String key : this.nameToInfo.keySet()) {
-          sb.append("\n\t").append(key).append(": ").append(this.nameToInfo.get(key));
-        }
-        logger.info( sb.toString());
+      StringBuilder sb = new StringBuilder("ElderState initialized with:");
+      for (String key : this.nameToInfo.keySet()) {
+        sb.append("\n\t").append(key).append(": ").append(this.nameToInfo.get(key));
+      }
+      logger.info(sb.toString());
 
     }
   }
@@ -108,9 +108,9 @@ public class ElderState {
           return gi;
         } else {
 
-            logger.info( "Elder setting grantor for {} to {} because {} ",
-                serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
-                    : "of unclean grantor shutdown"));
+          logger.info("Elder setting grantor for {} to {} because {} ",
+              serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
+                  : "of unclean grantor shutdown"));
 
           // current grantor crashed; make new member grantor and force recovery
           long myVersion = gi.getVersionId() + 1;
@@ -120,9 +120,9 @@ public class ElderState {
         }
       } else {
 
-          logger.info(
-              "Elder setting grantor for {} to {} because of clean grantor shutdown", serviceName,
-              requestor);
+        logger.info(
+            "Elder setting grantor for {} to {} because of clean grantor shutdown", serviceName,
+            requestor);
 
         gi = new GrantorInfo(requestor, 1, dlsSerialNumberRequestor, false);
         this.nameToInfo.put(serviceName, gi);
@@ -194,9 +194,9 @@ public class ElderState {
               // problem: specified oldTurk is not previousGrantor...
               if (oldTurk != null && !oldTurk.equals(previousGrantor)) {
 
-                  logger.info(
-                      "Elder did not become grantor for {} to {} because oldT was {} and the current grantor is {}",
-                      serviceName, newGrantor, oldTurk, previousGrantor);
+                logger.info(
+                    "Elder did not become grantor for {} to {} because oldT was {} and the current grantor is {}",
+                    serviceName, newGrantor, oldTurk, previousGrantor);
 
               }
 
@@ -204,8 +204,8 @@ public class ElderState {
               else {
                 // install new grantor
 
-                  logger.info( "Elder forced to set grantor for {} to {}",
-                      serviceName, newGrantor);
+                logger.info("Elder forced to set grantor for {} to {}",
+                    serviceName, newGrantor);
 
                 long myVersion = gi.getVersionId() + 1;
                 newGrantorVersion = myVersion;
@@ -230,18 +230,18 @@ public class ElderState {
             // problem: oldTurk was specified but there is no previousGrantor...
             if (oldTurk != null) {
 
-                logger.info(
-                    "Elder did not become grantor for {} to {} because oldT was {} and the current grantor {} had crashed",
-                    serviceName, newGrantor, oldTurk, previousGrantor);
+              logger.info(
+                  "Elder did not become grantor for {} to {} because oldT was {} and the current grantor {} had crashed",
+                  serviceName, newGrantor, oldTurk, previousGrantor);
 
             }
 
             // no oldTurk was specified...
             else {
 
-                logger.info(
-                    "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
-                    serviceName, newGrantor);
+              logger.info(
+                  "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
+                  serviceName, newGrantor);
 
               // current grantor crashed; make new member grantor and force recovery
               this.nameToInfo.put(serviceName,
@@ -257,18 +257,18 @@ public class ElderState {
           // problem: no oldTurk was specified
           if (oldTurk != null) {
 
-              logger.info(
-                  "Elder did not become grantor for {} to {} because oldT was {} and elder had no current grantor",
-                  serviceName, newGrantor, oldTurk);
+            logger.info(
+                "Elder did not become grantor for {} to {} because oldT was {} and elder had no current grantor",
+                serviceName, newGrantor, oldTurk);
 
           }
 
           // no oldTurk was specified
           else {
 
-              logger.info(
-                  "Elder forced to set grantor for {} to {} because of clean grantor shutdown",
-                  serviceName, newGrantor);
+            logger.info(
+                "Elder forced to set grantor for {} to {} because of clean grantor shutdown",
+                serviceName, newGrantor);
 
             // no current grantor; last one shutdown cleanly
             gi = new GrantorInfo(newGrantor, 1, newGrantorSerialNumber, false);
@@ -325,14 +325,14 @@ public class ElderState {
         if (!oldGrantor.equals(currentGrantor)) { // fix for 32603
           this.nameToInfo.put(serviceName, gi);
 
-            logger.info(
-                "Elder not making {} grantor shutdown for {} by {} because the current grantor is {}",
-                (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor, currentGrantor);
+          logger.info(
+              "Elder not making {} grantor shutdown for {} by {} because the current grantor is {}",
+              (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor, currentGrantor);
 
         } else {
 
-            logger.info( "Elder making {} grantor shutdown for {} by {}",
-                (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor);
+          logger.info("Elder making {} grantor shutdown for {} by {}",
+              (locksHeld ? "unclean" : "clean"), serviceName, oldGrantor);
 
         }
       }

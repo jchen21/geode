@@ -206,8 +206,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     // local grantor... don't use messaging... fake it
     if (isLockGrantor()) {
 
-        logger.info(
-            "DLockRequestProcessor processing lock request directly");
+      logger.info(
+          "DLockRequestProcessor processing lock request directly");
 
       this.request.setSender(this.dm.getDistributionManagerId());
 
@@ -229,7 +229,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           throw (InterruptedException) ex.getCause();
         }
 
-          logger.info( "DLockRequestProcessor caught ReplyException", ex);
+        logger.info("DLockRequestProcessor caught ReplyException", ex);
 
         return false;
       }
@@ -241,15 +241,15 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           throw (InterruptedException) ex.getCause();
         }
 
-          logger.info( "DLockRequestProcessor caught ReplyException", ex);
+        logger.info("DLockRequestProcessor caught ReplyException", ex);
 
         return false;
       }
     }
 
 
-      logger.info( "DLockRequestProcessor {} for {}",
-          (this.gotLock ? "got lock" : "failed to get lock"), this.request);
+    logger.info("DLockRequestProcessor {} for {}",
+        (this.gotLock ? "got lock" : "failed to get lock"), this.request);
 
     return this.gotLock;
   }
@@ -281,7 +281,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           "DLockRequestProcessor is unable to process message of type " + msg.getClass());
 
 
-        logger.info( "Processing DLockResponseMessage: '{}'", msg);
+      logger.info("Processing DLockResponseMessage: '{}'", msg);
 
       final DLockResponseMessage reply = (DLockResponseMessage) msg;
       this.response = reply;
@@ -290,9 +290,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         // Ignore this response since it was sent for a lockId that
         // must have timed out.
 
-          logger.info(
-              "Failed to find processor for lockId {} processor ids must have wrapped.",
-              this.response.getLockId());
+        logger.info(
+            "Failed to find processor for lockId {} processor ids must have wrapped.",
+            this.response.getLockId());
 
         Assert.assertTrue(this.response.getLockId() == this.request.getLockId());
       }
@@ -301,57 +301,57 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         case DLockResponseMessage.GRANT:
           // grantor has granted the lock request...
 
-            logger.info( "{} has granted lock for {} in {}",
-                reply.getSender(), reply.objectName, reply.serviceName);
+          logger.info("{} has granted lock for {} in {}",
+              reply.getSender(), reply.objectName, reply.serviceName);
 
           this.gotLock = true;
           break;
         case DLockResponseMessage.NOT_GRANTOR:
           // target was not the grantor! who is the grantor?!
 
-            logger.info(
-                "{} has responded DLockResponseMessage.NOT_GRANTOR for {}", reply.getSender(),
-                reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.NOT_GRANTOR for {}", reply.getSender(),
+              reply.serviceName);
 
           break;
         case DLockResponseMessage.DESTROYED:
           // grantor claims we sent it a NonGrantorDestroyedMessage
 
-            logger.info(
-                "{} has responded DLockResponseMessage.DESTROYED for {}", reply.getSender(),
-                reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.DESTROYED for {}", reply.getSender(),
+              reply.serviceName);
 
           break;
         case DLockResponseMessage.TIMEOUT:
           // grantor told us the lock request has timed out...
 
-            logger.info(
-                "{} has responded DLockResponseMessage.TIMEOUT for {} in {}", reply.getSender(),
-                reply.objectName, reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.TIMEOUT for {} in {}", reply.getSender(),
+              reply.objectName, reply.serviceName);
 
           break;
         case DLockResponseMessage.SUSPENDED:
           // grantor told us that locking has been suspended for the service...
 
-            logger.info(
-                "{} has responded DLockResponseMessage.SUSPENDED for {} in {}", reply.getSender(),
-                reply.objectName, reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.SUSPENDED for {} in {}", reply.getSender(),
+              reply.objectName, reply.serviceName);
 
           break;
         case DLockResponseMessage.NOT_HOLDER:
           // tried to reenter lock but grantor says we're not the lock holder...
 
-            logger.info(
-                "{} has responded DLockResponseMessage.NOT_HOLDER for {} in {}", reply.getSender(),
-                reply.objectName, reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.NOT_HOLDER for {} in {}", reply.getSender(),
+              reply.objectName, reply.serviceName);
 
           break;
         case DLockResponseMessage.TRY_LOCK_FAILED:
           // tried to acquire try-lock but grantor says it's held and we failed...
 
-            logger.info(
-                "{} has responded DLockResponseMessage.TRY_LOCK_FAILED for {} in {}",
-                reply.getSender(), reply.objectName, reply.serviceName);
+          logger.info(
+              "{} has responded DLockResponseMessage.TRY_LOCK_FAILED for {} in {}",
+              reply.getSender(), reply.objectName, reply.serviceName);
 
           break;
         default:
@@ -363,7 +363,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     } finally {
       super.process(msg);
 
-        logger.info( "Finished processing DLockResponseMessage: '{}'", msg);
+      logger.info("Finished processing DLockResponseMessage: '{}'", msg);
 
       ((DLockResponseMessage) msg).processed = true;
     }
@@ -547,8 +547,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         if (failed) {
           // above code failed so now ensure reply is sent
 
-            logger.info( "DLockRequestMessage.process failed for <{}>",
-                this);
+          logger.info("DLockRequestMessage.process failed for <{}>",
+              this);
 
           this.response = createResponse();
           this.response.setProcessorId(getProcessorId());
@@ -580,7 +580,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         @Override
         public void run() {
 
-            logger.info( "calling waitForGrantor {}", msg);
+          logger.info("calling waitForGrantor {}", msg);
 
           basicProcess(dm, true);
         }
@@ -592,8 +592,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
       try {
         this.receivingDM = dm;
 
-          logger.info( "DLockRequestMessage.basicProcess processing <{}>",
-              this);
+        logger.info("DLockRequestMessage.basicProcess processing <{}>",
+            this);
 
         this.response = createResponse();
         this.response.setProcessorId(getProcessorId());
@@ -613,30 +613,30 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
 
         if (this.svc == null || this.grantor == null) {
 
-            logger.info( "respondWithNotGrantor this.svc={} this.grantor={}",
-                this.svc, this.grantor);
+          logger.info("respondWithNotGrantor this.svc={} this.grantor={}",
+              this.svc, this.grantor);
 
           respondWithNotGrantor();
         }
 
         else if (this.grantor.isDestroyed()) {
 
-            logger.info( "respondWithNotGrantor grantor was destroyed {}",
-                this.grantor);
+          logger.info("respondWithNotGrantor grantor was destroyed {}",
+              this.grantor);
 
           respondWithNotGrantor();
         } else if (this.grantor.getVersionId() != this.grantorVersion) {
 
-            logger.info(
-                "respondWithNotGrantor current version is {}; request was for {}",
-                this.grantor.getVersionId(), this.grantorVersion);
+          logger.info(
+              "respondWithNotGrantor current version is {}; request was for {}",
+              this.grantor.getVersionId(), this.grantorVersion);
 
           respondWithNotGrantor();
         } else if (this.svc.getSerialNumber() != this.grantorSerialNumber) {
 
-            logger.info(
-                "respondWithNotGrantor current serial number is {}; request was for {}",
-                this.svc.getSerialNumber(), this.grantorSerialNumber);
+          logger.info(
+              "respondWithNotGrantor current serial number is {}; request was for {}",
+              this.svc.getSerialNumber(), this.grantorSerialNumber);
 
           respondWithNotGrantor();
         }
@@ -646,8 +646,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           this.svc.checkDestroyed();
           if (!this.svc.isLockGrantor()) {
 
-              logger.info(
-                  "respondWithNotGrantor service !isLockGrantor svc={}", this.svc);
+            logger.info(
+                "respondWithNotGrantor service !isLockGrantor svc={}", this.svc);
 
             respondWithNotGrantor();
           }
@@ -671,12 +671,12 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           // queue up this request to be granted...
           else {
 
-              logger.info( "Handling lock request: <{}>", this);
+            logger.info("Handling lock request: <{}>", this);
 
             if (this.grantor.isDestroyed()) {
 
-                logger.info(
-                    "respondWithNotGrantor grantor was destroyed grantor={}", this.grantor);
+              logger.info(
+                  "respondWithNotGrantor grantor was destroyed grantor={}", this.grantor);
 
               respondWithNotGrantor();
             } else {
@@ -691,20 +691,20 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         }
       } catch (LockGrantorDestroyedException e) {
 
-          logger.info(
-              "LockGrantorDestroyedException respondWithNotGrantor svc={}", this.svc);
+        logger.info(
+            "LockGrantorDestroyedException respondWithNotGrantor svc={}", this.svc);
 
         respondWithNotGrantor();
       } catch (LockServiceDestroyedException e) {
 
-          logger.info(
-              "LockServiceDestroyedException respondWithNotGrantor svc={}", this.svc);
+        logger.info(
+            "LockServiceDestroyedException respondWithNotGrantor svc={}", this.svc);
 
         respondWithNotGrantor();
       } catch (CancelException e) {
 
-          logger.info(
-              "CacheClosedException respondWithNotGrantor svc={} exception = {}", this.svc, e);
+        logger.info(
+            "CacheClosedException respondWithNotGrantor svc={} exception = {}", this.svc, e);
 
         if (isLocal()) {
           throw e;
@@ -737,8 +737,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     /** Callers must be synchronized on this */
     private void respondWithTimeout() {
 
-        logger.info( "Request {} timed out; grantor status = {}", this,
-            this.grantor.displayStatus(rThread, objectName));
+      logger.info("Request {} timed out; grantor status = {}", this,
+          this.grantor.displayStatus(rThread, objectName));
 
       this.response.responseCode = DLockResponseMessage.TIMEOUT;
       sendResponse();
@@ -762,9 +762,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         if (this.response.getException() == null) {
           this.response.setException(new ReplyException(t));
 
-            logger.info(
-                "While processing <{}>, got exception, returning to sender", this,
-                this.response.getException());
+          logger.info(
+              "While processing <{}>, got exception, returning to sender", this,
+              this.response.getException());
 
         } else {
           logger.info(
@@ -803,9 +803,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         now = this.startTime;
       if (this.waitMillis + this.startTime - now <= 0) {
 
-          logger.info(
-              "DLockRequestProcessor request timed out: waitMillis={} now={} startTime={}",
-              this.waitMillis, now, this.startTime);
+        logger.info(
+            "DLockRequestProcessor request timed out: waitMillis={} now={} startTime={}",
+            this.waitMillis, now, this.startTime);
 
         respondWithTimeout();
         return true;

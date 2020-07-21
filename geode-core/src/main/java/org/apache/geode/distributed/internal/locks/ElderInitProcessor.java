@@ -148,9 +148,9 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       ElderInitMessage msg = new ElderInitMessage();
       msg.processorId = proc.getProcessorId();
       msg.setRecipients(others);
-      
-        logger.info( "ElderInitMessage sending {} to {}", msg, others);
-      
+
+      logger.info("ElderInitMessage sending {} to {}", msg, others);
+
       dm.putOutgoing(msg);
     }
 
