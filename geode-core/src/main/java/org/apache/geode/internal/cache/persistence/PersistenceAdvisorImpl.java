@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
 import org.apache.geode.internal.cache.persistence.PersistentStateQueryMessage.PersistentStateQueryReplyProcessor;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.TransformUtils.CollectionTransformer;
@@ -187,18 +186,18 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
        */
       @Override
       public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {
-        if (logger.isDebugEnabled()) {
-          Set<PersistentMemberID> members =
-              new HashSet<>(cacheDistributionAdvisor.adviseInitializedPersistentMembers().values());
-          members.remove(persistentID);
 
-          Set<String> onlineMembers = new HashSet<>();
-          collectionTransformer.transform(members, onlineMembers, persistentMemberIdTransformer);
+        Set<PersistentMemberID> members =
+            new HashSet<>(cacheDistributionAdvisor.adviseInitializedPersistentMembers().values());
+        members.remove(persistentID);
 
-          logger.info(
-              "The following persistent member has gone offline for region {}: {}  Remaining participating members for the region include: {}",
-              regionPath, persistentMemberIdTransformer.transform(persistentID), onlineMembers);
-        }
+        Set<String> onlineMembers = new HashSet<>();
+        collectionTransformer.transform(members, onlineMembers, persistentMemberIdTransformer);
+
+        logger.info(
+            "The following persistent member has gone offline for region {}: {}  Remaining participating members for the region include: {}",
+            regionPath, persistentMemberIdTransformer.transform(persistentID), onlineMembers);
+
       }
     });
   }
@@ -260,10 +259,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     DistributionManager dm = cacheDistributionAdvisor.getDistributionManager();
     PersistentMembershipView peersPersistentMembershipView =
         MembershipViewRequest.send(peer, dm, regionPath, targetReinitializing);
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Updating persistent view from {}",
-          shortDiskStoreId(), regionPath, peer);
-    }
+
+    logger.info("{}-{}: Updating persistent view from {}",
+        shortDiskStoreId(), regionPath, peer);
+
 
     synchronized (lock) {
       PersistentMemberID myId = getPersistentID();
@@ -276,11 +275,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         if (!isRevoked(id) && !removedMembers.contains(id)) {
           if (!id.equals(myId) && !recoveredMembers.remove(id)
               && !id.getDiskStoreId().equals(getDiskStoreID())) {
-            if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-              logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-                  "{}-{}: Processing membership view from peer. Marking {} as online because {} says its online",
-                  shortDiskStoreId(), regionPath, id, peer);
-            }
+
+            logger.info(
+                "{}-{}: Processing membership view from peer. Marking {} as online because {} says its online",
+                shortDiskStoreId(), regionPath, id, peer);
+
             persistentMemberView.memberOnline(id);
           }
         }
@@ -295,22 +294,22 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           // than the current member).
           if (!id.equals(myId) && !recoveredMembers.remove(id)
               && !id.getDiskStoreId().equals(getDiskStoreID())) {
-            if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-              logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-                  "{}-{}: Processing membership view from peer. Marking {} as online because {} says its offline, but we have never seen it",
-                  shortDiskStoreId(), regionPath, id, peer);
-            }
+
+            logger.info(
+                "{}-{}: Processing membership view from peer. Marking {} as online because {} says its offline, but we have never seen it",
+                shortDiskStoreId(), regionPath, id, peer);
+
             persistentMemberView.memberOnline(id);
           }
         }
       }
 
       for (PersistentMemberID id : recoveredMembers) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Processing membership view from peer. Removing {} because {} doesn't have it",
-              shortDiskStoreId(), regionPath, id, peer);
-        }
+
+        logger.info(
+            "{}-{}: Processing membership view from peer. Removing {} because {} doesn't have it",
+            shortDiskStoreId(), regionPath, id, peer);
+
         persistentMemberView.memberRemoved(id);
       }
     }
@@ -382,12 +381,12 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       for (PersistentMemberID id : membersToMarkOffline) {
         persistentMemberView.memberOffline(id);
       }
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-            "{}-{}: Persisting the new membership view and ID as online. Online members {}. Offline members {}. Equal memebers {}.",
-            shortDiskStoreId(), regionPath, persistentMemberView.getOnlineMembers(),
-            persistentMemberView.getOfflineMembers(), equalMembers);
-      }
+
+      logger.info(
+          "{}-{}: Persisting the new membership view and ID as online. Online members {}. Offline members {}. Equal memebers {}.",
+          shortDiskStoreId(), regionPath, persistentMemberView.getOnlineMembers(),
+          persistentMemberView.getOfflineMembers(), equalMembers);
+
 
       persistentMemberView.setInitialized();
       online = true;
@@ -438,11 +437,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       // essentially finishing what we started by preparing that ID first. This will remove that ID
       // from the peers.
       if (initializingId != null) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: We still have an initializing id: {}. Telling peers to remove the old id {} and transitioning this initializing id to old id. recipients {}",
-              shortDiskStoreId(), regionPath, initializingId, oldId, profileUpdateRecipients);
-        }
+
+        logger.info(
+            "{}-{}: We still have an initializing id: {}. Telling peers to remove the old id {} and transitioning this initializing id to old id. recipients {}",
+            shortDiskStoreId(), regionPath, initializingId, oldId, profileUpdateRecipients);
+
         long viewVersion = cacheDistributionAdvisor.startOperation();
         try {
           PrepareNewPersistentMemberMessage.send(profileUpdateRecipients, dm, regionPath, oldId,
@@ -455,18 +454,18 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         oldId = initializingId;
       }
 
-      if (logger.isDebugEnabled()) {
-        logger.debug("Persisting my new persistent ID {}", newId);
-      }
+
+      logger.info("Persisting my new persistent ID {}", newId);
+
       persistentMemberView.setInitializing(newId);
     }
 
     profileUpdateRecipients = cacheDistributionAdvisor.adviseProfileUpdate();
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-          "{}-{}: Sending the new ID to peers. They should remove the old id {}. Recipients: {}",
-          shortDiskStoreId(), regionPath, oldId, profileUpdateRecipients);
-    }
+
+    logger.info(
+        "{}-{}: Sending the new ID to peers. They should remove the old id {}. Recipients: {}",
+        shortDiskStoreId(), regionPath, oldId, profileUpdateRecipients);
+
     if (newId != null) {
       PrepareNewPersistentMemberMessage.send(profileUpdateRecipients, dm, regionPath, oldId, newId);
     }
@@ -570,11 +569,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
   private void memberOffline(InternalDistributedMember distributedMember,
       PersistentMemberID persistentID) {
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-          "{}-{}: Member offine. id={}, persistentID={}", shortDiskStoreId(), regionPath,
-          distributedMember, persistentID);
-    }
+
+    logger.info(
+        "{}-{}: Member offine. id={}, persistentID={}", shortDiskStoreId(), regionPath,
+        distributedMember, persistentID);
+
     synchronized (lock) {
       boolean foundMember = recoveredMembers.remove(persistentID);
       foundMember |= equalMembers.remove(persistentID);
@@ -605,11 +604,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
   private void memberOnline(InternalDistributedMember distributedMember,
       PersistentMemberID persistentID) {
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-          "{}-{}: Sending the new ID to peers.  Member online. id={}, persistentID={}",
-          shortDiskStoreId(), regionPath, distributedMember, persistentID);
-    }
+
+    logger.info(
+        "{}-{}: Sending the new ID to peers.  Member online. id={}, persistentID={}",
+        shortDiskStoreId(), regionPath, distributedMember, persistentID);
+
     synchronized (lock) {
       if (shouldUpdatePersistentView) {
         recoveredMembers.remove(persistentID);
@@ -622,11 +621,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           logger.warn("Unable to persist membership change", e);
         }
       } else {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Not marking member online in persistent view because we're still in initialization",
-              shortDiskStoreId(), regionPath);
-        }
+
+        logger.info(
+            "{}-{}: Not marking member online in persistent view because we're still in initialization",
+            shortDiskStoreId(), regionPath);
+
       }
 
       notifyListenersMemberOnline(distributedMember, persistentID);
@@ -657,10 +656,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
   @VisibleForTesting
   void memberRemoved(PersistentMemberID id, boolean revoked) {
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Member removed. persistentID={}",
-          shortDiskStoreId(), regionPath, id);
-    }
+
+    logger.info("{}-{}: Member removed. persistentID={}",
+        shortDiskStoreId(), regionPath, id);
+
 
     synchronized (lock) {
       recoveredMembers.remove(id);
@@ -745,20 +744,20 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public void prepareNewMember(InternalDistributedMember sender, PersistentMemberID oldId,
       PersistentMemberID newId) {
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-          "{}-{}: Preparing new persistent id {}. Old id is {}", shortDiskStoreId(), regionPath,
-          newId, oldId);
-    }
+
+    logger.info(
+        "{}-{}: Preparing new persistent id {}. Old id is {}", shortDiskStoreId(), regionPath,
+        newId, oldId);
+
     synchronized (lock) {
       // Don't prepare the ID if the advisor doesn't have a profile. This prevents a race with the
       // advisor remove
       if (!cacheDistributionAdvisor.containsId(sender)) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Refusing to prepare id because {} is not in our advisor", shortDiskStoreId(),
-              regionPath, sender);
-        }
+
+        logger.info(
+            "{}-{}: Refusing to prepare id because {} is not in our advisor", shortDiskStoreId(),
+            regionPath, sender);
+
         return;
       }
       // Persist new members even if we are not online yet. Two members can become online at once.
@@ -896,11 +895,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
                   addedMembers = true;
                   // Make sure we also persist that this member is online.
                   persistentMemberView.memberOnline(peerOnlineMember);
-                  if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-                    logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-                        "{}-{}: Adding {} to the list of members we're wait for, because {} has newer or equal data than is and is waiting for that member",
-                        shortDiskStoreId(), regionPath, peerOnlineMember, memberId);
-                  }
+
+                  logger.info(
+                      "{}-{}: Adding {} to the list of members we're wait for, because {} has newer or equal data than is and is waiting for that member",
+                      shortDiskStoreId(), regionPath, peerOnlineMember, memberId);
+
                 }
               }
             }
@@ -908,11 +907,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         }
       }
       removeOlderMembers(membersToWaitFor);
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-            "{}-{}: Initial state of membersToWaitFor, before pruning {}", shortDiskStoreId(),
-            regionPath, membersToWaitFor);
-      }
+
+      logger.info(
+          "{}-{}: Initial state of membersToWaitFor, before pruning {}", shortDiskStoreId(),
+          regionPath, membersToWaitFor);
+
 
       // For each of our peers, see what our state is according to their view.
       for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : results
@@ -934,11 +933,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         if (membersHostingThisRegion.contains(memberId) && persistentID != null && state != null
             && myInitializingId == null && (state.equals(PersistentMemberState.ONLINE)
                 || state.equals(PersistentMemberState.EQUAL))) {
-          if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-            logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-                "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
-                regionPath, persistentID, state);
-          }
+
+          logger.info(
+              "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
+              regionPath, persistentID, state);
+
           removeNewerPersistentID(membersToWaitFor, persistentID);
         }
 
@@ -951,11 +950,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         if (membersHostingThisRegion.contains(memberId) && initializingID != null && state != null
             && (state.equals(PersistentMemberState.ONLINE)
                 || state.equals(PersistentMemberState.EQUAL))) {
-          if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-            logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-                "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
-                regionPath, initializingID, state);
-          }
+
+          logger.info(
+              "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
+              regionPath, initializingID, state);
+
           removeByDiskStoreID(membersToWaitFor, diskStoreID, false);
         }
 
@@ -1033,11 +1032,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     for (Iterator<PersistentMemberID> itr = membersToWaitFor.iterator(); itr.hasNext();) {
       PersistentMemberID id = itr.next();
       if (persistentID.isOlderOrEqualVersionOf(id)) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Not waiting for {} because local member knows more about it",
-              shortDiskStoreId(), regionPath, id);
-        }
+
+        logger.info(
+            "{}-{}: Not waiting for {} because local member knows more about it",
+            shortDiskStoreId(), regionPath, id);
+
         itr.remove();
       }
     }
@@ -1051,11 +1050,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     for (Iterator<PersistentMemberID> itr = membersToWaitFor.iterator(); itr.hasNext();) {
       PersistentMemberID id = itr.next();
       if (id.getDiskStoreId().equals(diskStoreID)) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Not waiting for {} because it no longer has this region in its disk store",
-              shortDiskStoreId(), regionPath, id);
-        }
+
+        logger.info(
+            "{}-{}: Not waiting for {} because it no longer has this region in its disk store",
+            shortDiskStoreId(), regionPath, id);
+
         itr.remove();
         if (updateAdvisor) {
           memberRemoved(id, false);
@@ -1092,7 +1091,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public void logWaitingForMembers() {
     Set<String> membersToWaitForLogEntries = new HashSet<>();
-
+    logger.info("JC, allMembersWaitingFor=" + allMembersWaitingFor, new Throwable());
     if (offlineMembersWaitingFor != null && !offlineMembersWaitingFor.isEmpty()) {
       collectionTransformer.transform(offlineMembersWaitingFor, membersToWaitForLogEntries,
           persistentMemberIdTransformer);
@@ -1111,7 +1110,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     } else {
       collectionTransformer.transform(allMembersWaitingFor, membersToWaitForLogEntries,
           persistentMemberIdTransformer);
-
+      startupStatus.startup("JC", new Throwable());
       startupStatus.startup(
           String.format(
               "Region %s has potentially stale data. It is waiting for another online member to recover the latest data.%sMy persistent id:%s%s%sMembers with potentially new data:%s%s%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
@@ -1155,10 +1154,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     // We're tied for the latest copy of the data. try to get the distributed lock.
     holdingTieLock = distributedLockService.lock("PERSISTENCE_" + regionPath, 0, -1);
     if (!holdingTieLock) {
-      if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Failed to acquire the lock.",
-            shortDiskStoreId(), regionPath);
-      }
+
+      logger.info("{}-{}: Failed to acquire the lock.",
+          shortDiskStoreId(), regionPath);
+
     }
     return holdingTieLock;
   }
