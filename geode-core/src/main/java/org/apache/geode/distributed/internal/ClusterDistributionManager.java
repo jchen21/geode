@@ -1840,9 +1840,9 @@ public class ClusterDistributionManager implements DistributionManager {
     stats.incReceivedBytes(message.getBytesRead());
     stats.incMessageChannelTime(message.resetTimestamp());
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Received message '{}' from <{}>", message, message.getSender());
-    }
+
+    logger.info("Received message '{}' from <{}>", message, message.getSender());
+
     scheduleIncomingMessage((DistributionMessage) message);
   }
 

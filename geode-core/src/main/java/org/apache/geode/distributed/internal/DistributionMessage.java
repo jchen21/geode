@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -346,9 +345,9 @@ public abstract class DistributionMessage
    * Scheduled action to take when on this message when we are ready to process it.
    */
   protected void scheduleAction(final ClusterDistributionManager dm) {
-    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
-      logger.trace(LogMarker.DM_VERBOSE, "Processing '{}'", this);
-    }
+
+    logger.info("Processing '{}'", this);
+
     String reason = dm.getCancelCriterion().cancelInProgress();
     if (reason != null) {
       // throw new ShutdownException(reason);
