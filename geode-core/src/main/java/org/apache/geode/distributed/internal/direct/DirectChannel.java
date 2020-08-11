@@ -243,10 +243,10 @@ public class DirectChannel {
     if (!directReply && directMsg != null) {
       directMsg.registerProcessor();
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Sending ({}) to {} peers ({}) via tcp/ip",
-          msg, p_destinations.length, Arrays.toString(p_destinations));
-    }
+
+    logger.info("Sending ({}) to {} peers ({}) via tcp/ip",
+        msg, p_destinations.length, Arrays.toString(p_destinations));
+
 
     try {
       do {
