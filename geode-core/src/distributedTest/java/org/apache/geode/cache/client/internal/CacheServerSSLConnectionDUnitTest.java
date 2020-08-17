@@ -118,7 +118,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
-public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
+  public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String TRUSTED_STORE = "trusted.keystore";
   private static final String CLIENT_KEY_STORE = "default.keystore";
@@ -549,7 +549,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
    * Attempt to connect to the server using a real SSL client, demonstrating that the server is not
    * blocked and can process the new connection request.
    */
-  @Test
+
   public void clientSlowToHandshakeDoesNotBlockServer() throws Throwable {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
@@ -596,7 +596,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     }
   }
 
-  @Test
+
   public void testNonSSLClient() {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
@@ -625,7 +625,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     }
   }
 
-  @Test
+
   public void testSSLClientWithNoAuth() {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
@@ -650,7 +650,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> doServerRegionTestTask());
   }
 
-  @Test
+
   public void untrustedClientIsRejected() {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
@@ -680,7 +680,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> verifyServerDoesNotReceiveClientUpdate());
   }
 
-  @Test
+
   public void testSSLClientWithNonSSLServer() {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
