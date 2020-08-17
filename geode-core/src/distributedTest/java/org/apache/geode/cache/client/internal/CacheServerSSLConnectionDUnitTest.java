@@ -63,11 +63,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,8 +95,10 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -100,6 +107,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -127,6 +135,11 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   private String hostName;
 
   private static boolean useOldSSLSettings;
+
+  public static final Logger logger = LogService.getLogger();
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Parameters
   public static Collection<Boolean> data() {
@@ -243,6 +256,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region r = factory.create("serverRegion");
     r.put("serverkey", "servervalue");
+    DistributedLockService.create("serviceName", cache.getDistributedSystem());
   }
 
   private void getNewSSLSettings(Properties gemFireProps, String cacheServerSslprotocols,
@@ -341,16 +355,85 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
   private void doClientRegionTest() {
+    // try {
+    // for (int i = 0; i < 100; i++) {
+    //
+    // boolean isLocked =
+    // DistributedLockService.getServiceNamed("serviceName").lock("lock1", 5_000, -1);
+    // if (isLocked) {
+    // logger.info("client acquired the lock.");
+    // Thread.sleep(10000);
+    // break;
+    // }
+    // logger.info("client retry");
+    // Thread.sleep(100);
+    // }
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // } finally {
+    // logger.info("client unlock");
+    // DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+    // }
     Region<String, String> region = clientCache.getRegion("serverRegion");
     assertEquals("servervalue", region.get("serverkey"));
     region.put("clientkey", "clientvalue");
     assertEquals("clientvalue", region.get("clientkey"));
   }
 
-  private void doServerRegionTest() {
+  private void doServerRegionTest() throws ExecutionException, InterruptedException {
+    ExecutorService executorService = Executors.newCachedThreadPool();
+    Future future1 = executorService.submit(() -> {
+      try {
+        for (int i = 0; i < 100; i++) {
+
+          boolean isLocked =
+              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 5_000, -1);
+          if (isLocked) {
+            logger.info("server acquired the lock.");
+            Thread.sleep(10000);
+            break;
+          }
+          logger.info("server retry");
+          Thread.sleep(100);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        logger.info("server unlock");
+        DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+      }
+    });
+
+    Future future2 = executorService.submit(() -> {
+      try {
+        for (int i = 0; i < 100; i++) {
+
+          boolean isLocked =
+              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 5_000, -1);
+          if (isLocked) {
+            logger.info("server acquired the lock.");
+            Thread.sleep(10000);
+            break;
+          }
+          logger.info("server retry");
+          Thread.sleep(100);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        logger.info("server unlock");
+        DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+      }
+    });
+
+    future1.get();
+    future2.get();
+    executorService.awaitTermination(60, TimeUnit.SECONDS);
+    executorService.shutdown();
+
     Region<String, String> region = cache.getRegion("serverRegion");
-    assertEquals("servervalue", region.get("serverkey"));
-    assertEquals("clientvalue", region.get("clientkey"));
+    // assertEquals("servervalue", region.get("serverkey"));
+    // assertEquals("clientvalue", region.get("clientkey"));
   }
 
 
@@ -390,7 +473,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     assertFalse(region.containsKey("clientkey"));
   }
 
-  private static void doServerRegionTestTask() {
+  private static void doServerRegionTestTask() throws ExecutionException, InterruptedException {
     instance.doServerRegionTest();
   }
 
@@ -441,8 +524,16 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+
+
+
+      AsyncInvocation clientAsync = clientVM.invokeAsync(() -> doClientRegionTestTask());
+      AsyncInvocation serverAsync = serverVM.invokeAsync(() -> doServerRegionTestTask());
+      AsyncInvocation serverAsync2 = serverVM2.invokeAsync(() -> doServerRegionTestTask());
+
+      clientAsync.get();
+      serverAsync.get();
+      serverAsync2.get();
     } finally {
       locator.stop();
     }
