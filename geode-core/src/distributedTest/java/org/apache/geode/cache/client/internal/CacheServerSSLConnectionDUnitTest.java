@@ -96,6 +96,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -134,18 +136,15 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
   private int cacheServerPort;
   private String hostName;
 
-  private static boolean useOldSSLSettings;
+  private static boolean useOldSSLSettings = true;
 
   public static final Logger logger = LogService.getLogger();
-
-  @Rule
-  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Parameters
   public static Collection<Boolean> data() {
     List<Boolean> result = new ArrayList<>();
     result.add(Boolean.TRUE);
-    result.add(Boolean.FALSE);
+//    result.add(Boolean.FALSE);
     return result;
   }
 
@@ -280,6 +279,27 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
   }
 
+  private void getOldSSLSettings(Properties gemFireProps, String cacheServerSslprotocols,
+                                 String cacheServerSslciphers, boolean cacheServerSslRequireAuth, final boolean cacheServerSslenabled) {
+    gemFireProps.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+    gemFireProps.setProperty(CLUSTER_SSL_PROTOCOLS, cacheServerSslprotocols);
+    gemFireProps.setProperty(CLUSTER_SSL_CIPHERS, cacheServerSslciphers);
+    gemFireProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
+        String.valueOf(cacheServerSslRequireAuth));
+
+    String keyStore =
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE)
+            .getAbsolutePath();
+    String trustStore =
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class,
+            SERVER_TRUST_STORE).getAbsolutePath();
+    gemFireProps.setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.setProperty(CLUSTER_SSL_KEYSTORE, keyStore);
+    gemFireProps.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.setProperty(CLUSTER_SSL_TRUSTSTORE, trustStore);
+    gemFireProps.setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
+  }
+
   private void setUpClientVM(String host, int port, boolean cacheServerSslenabled,
       boolean cacheServerSslRequireAuth, String keyStore, String trustStore, boolean subscription,
       boolean clientHasTrustedKeystore) {
@@ -384,45 +404,77 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
     ExecutorService executorService = Executors.newCachedThreadPool();
     Future future1 = executorService.submit(() -> {
       try {
-        for (int i = 0; i < 100; i++) {
+        int i;
+        for (i = 0; i < 100; i++) {
 
           boolean isLocked =
-              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 5_000, -1);
+              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 1_000, 5_000);
           if (isLocked) {
             logger.info("server acquired the lock.");
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             break;
+          } else {
+            logger.info("server retry");
+            try {
+              Thread.sleep(10000);
+            } catch (Exception e) {
+              logger.error(e);
+            }
           }
-          logger.info("server retry");
-          Thread.sleep(100);
+        }
+
+        if (i == 100) {
+          logger.error("server failed to acquire the lock");
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error(e);
       } finally {
         logger.info("server unlock");
-        DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+        try {
+          DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+        }
+        catch (LeaseExpiredException exception) {
+          logger.info("Caught LeaseExpiredException");
+        }
+        DistributedSystem.releaseThreadsSockets();
       }
     });
 
     Future future2 = executorService.submit(() -> {
       try {
-        for (int i = 0; i < 100; i++) {
+        int i;
+        for (i = 0; i < 100; i++) {
 
           boolean isLocked =
-              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 5_000, -1);
+              DistributedLockService.getServiceNamed("serviceName").lock("lock1", 1_000, 5_000);
           if (isLocked) {
             logger.info("server acquired the lock.");
-            Thread.sleep(10000);
+            Thread.sleep(1000);
             break;
+          } else {
+            logger.info("server retry");
+            try {
+              Thread.sleep(10000);
+            } catch (Exception e) {
+              logger.error(e);
+            }
           }
-          logger.info("server retry");
-          Thread.sleep(100);
+        }
+
+        if (i == 100) {
+          logger.error("server failed to acquire the lock");
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error(e);
       } finally {
         logger.info("server unlock");
-        DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+        try {
+          DistributedLockService.getServiceNamed("serviceName").unlock("lock1");
+        }
+        catch (LeaseExpiredException exception) {
+          logger.info("Caught LeaseExpiredException");
+        }
+        DistributedSystem.releaseThreadsSockets();
       }
     });
 
@@ -474,7 +526,9 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
   }
 
   private static void doServerRegionTestTask() throws ExecutionException, InterruptedException {
-    instance.doServerRegionTest();
+//    for (int i = 0; i < 10; i++) {
+      instance.doServerRegionTest();
+//    }
   }
 
   private static Object[] getCacheServerEndPointTask() { // TODO: avoid Object[]
@@ -498,9 +552,11 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 
   @Test
   public void testCacheServerSSL() throws Exception {
-    VM serverVM = getVM(1);
-    VM clientVM = getVM(2);
-    VM serverVM2 = getVM(3);
+    VM serverVM = getVM(0);
+//    VM clientVM = getVM(2);
+    VM serverVM2 = getVM(1);
+    VM serverVM3 = getVM(2);
+    VM serverVM4 = getVM(3);
 
     boolean cacheServerSslenabled = true;
     boolean cacheClientSslenabled = true;
@@ -510,8 +566,14 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
-    getNewSSLSettings(locatorProps, cacheServerSslprotocols, cacheServerSslciphers,
-        cacheServerSslRequireAuth);
+    if (!useOldSSLSettings) {
+      getNewSSLSettings(locatorProps, cacheServerSslprotocols, cacheServerSslciphers,
+          cacheServerSslRequireAuth);
+    }
+    else {
+      getOldSSLSettings(locatorProps, cacheServerSslprotocols, cacheServerSslciphers,
+          cacheServerSslRequireAuth, cacheServerSslenabled);
+    }
     Locator locator = Locator.startLocatorAndDS(0, new File(""), locatorProps);
     int locatorPort = locator.getPort();
     try {
@@ -519,21 +581,29 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
       int port = serverVM.invoke(() -> createServerTask());
       serverVM2.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
       serverVM2.invoke(() -> createServerTask());
+      serverVM3.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
+      serverVM3.invoke(() -> createServerTask());
+      serverVM4.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
+      serverVM4.invoke(() -> createServerTask());
 
       String hostName = getHostName();
 
-      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
+//      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+//          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
 
 
 
-      AsyncInvocation clientAsync = clientVM.invokeAsync(() -> doClientRegionTestTask());
+//      AsyncInvocation clientAsync = clientVM.invokeAsync(() -> doClientRegionTestTask());
       AsyncInvocation serverAsync = serverVM.invokeAsync(() -> doServerRegionTestTask());
       AsyncInvocation serverAsync2 = serverVM2.invokeAsync(() -> doServerRegionTestTask());
+      AsyncInvocation serverAsync3 = serverVM3.invokeAsync(() -> doServerRegionTestTask());
+      AsyncInvocation serverAsync4 = serverVM4.invokeAsync(() -> doServerRegionTestTask());
 
-      clientAsync.get();
+//      clientAsync.get();
       serverAsync.get();
       serverAsync2.get();
+      serverAsync3.get();
+      serverAsync4.get();
     } finally {
       locator.stop();
     }
