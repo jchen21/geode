@@ -204,7 +204,10 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
         getFuture[i] = executorServiceRule.submit(getValue);
       }
 
-      Future<Object> updateFuture = executorServiceRule.submit(updateTradeFunction);
+      Future<Object> updateFuture[] = new Future[numThreads];
+      for (int i = 0; i < numThreads; i++) {
+        updateFuture[i] = executorServiceRule.submit(updateTradeFunction);
+      }
 
       Trade trade =
           new Trade(String.valueOf(random.nextInt(100000)), CUSIPS[random.nextInt(CUSIPS.length)],
@@ -215,7 +218,11 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
       for (int i = 0; i < numThreads; i++) {
         getFuture[i].get();
       }
-      updateFuture.get();
+
+      for (int i = 0; i < numThreads; i++) {
+        updateFuture[i].get();
+      }
+
       putFuture.get();
 
       region.destroy(key);
@@ -232,7 +239,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     private final long updateTime;
 
     public Trade(String id, String cusip, int shares, BigDecimal price, byte[] payload,
-                 long createTime, long updateTime) {
+        long createTime, long updateTime) {
       this.id = id;
       this.cusip = cusip;
       this.shares = shares;
