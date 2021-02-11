@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
@@ -197,6 +199,22 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
         }
       };
 
+      String cusip = CUSIPS[random.nextInt(CUSIPS.length)];
+
+      Callable<Object> queryCusip = () -> {
+        while (true) {
+          String
+              queryString =
+              String.format("SELECT * FROM /%s WHERE cusip = %s", regionName, cusip);
+          Collection<Trade>
+              result =
+              (SelectResults<Trade>) region.getRegionService().getQueryService()
+                  .newQuery(queryString).execute();
+          return result;
+        }
+      };
+
+
       int numThreads = 10;
 
       Future<Object> getFuture[] = new Future[numThreads];
@@ -209,8 +227,13 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
         updateFuture[i] = executorServiceRule.submit(updateTradeFunction);
       }
 
+      Future<Object> queryFuture[] = new Future[numThreads];
+      for (int i = 0; i < numThreads; i++) {
+        queryFuture[i] = executorServiceRule.submit(queryCusip);
+      }
+
       Trade trade =
-          new Trade(String.valueOf(random.nextInt(100000)), CUSIPS[random.nextInt(CUSIPS.length)],
+          new Trade(String.valueOf(random.nextInt(100000)), cusip,
               random.nextInt(100), new BigDecimal(BigInteger.valueOf(random.nextInt(100000)), 2),
               new byte[100000], System.currentTimeMillis(), System.currentTimeMillis());
       Future<Object> putFuture = executorServiceRule.submit(() -> region.put(key, trade));
@@ -221,6 +244,10 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
       for (int i = 0; i < numThreads; i++) {
         updateFuture[i].get();
+      }
+
+      for (int i = 0; i < numThreads; i++) {
+        queryFuture[i].get();
       }
 
       putFuture.get();
