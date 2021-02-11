@@ -203,11 +203,9 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
       Callable<Object> queryCusip = () -> {
         while (true) {
-          String
-              queryString =
+          String queryString =
               String.format("SELECT * FROM /%s WHERE cusip = %s", regionName, cusip);
-          Collection<Trade>
-              result =
+          Collection<Trade> result =
               (SelectResults<Trade>) region.getRegionService().getQueryService()
                   .newQuery(queryString).execute();
           return result;

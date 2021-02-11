@@ -646,7 +646,8 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       result = dis.readInt(size - idx * DataSize.INTEGER_SIZE);
     }
     if (result < 0) {
-      logger.info("result should be > 0, but result is " + result + " idx is " + idx + " size is " + size + " and originalSize is " + this.dis.getOriginalSize());
+      logger.info("result should be > 0, but result is " + result + " idx is " + idx + " size is "
+          + size + " and originalSize is " + this.dis.getOriginalSize());
     }
     return result;
   }

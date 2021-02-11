@@ -108,7 +108,8 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
             writer.writeRawField(f, getRaw(f));
           }
         } catch (PdxSerializationException e) {
-          logger.info("WritablePdxInstance.getUnmodifiedReader():f.getFieldName()=" + f.getFieldName());
+          logger.info(
+              "WritablePdxInstance.getUnmodifiedReader():f.getFieldName()=" + f.getFieldName());
           for (PdxField field : getPdxType().getFields()) {
             logger.info(field.toString());
           }
