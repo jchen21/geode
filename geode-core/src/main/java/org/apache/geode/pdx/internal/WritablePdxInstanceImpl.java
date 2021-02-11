@@ -17,17 +17,22 @@ package org.apache.geode.pdx.internal;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxFieldDoesNotExistException;
 import org.apache.geode.pdx.PdxFieldTypeMismatchException;
+import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
 public class WritablePdxInstanceImpl extends PdxInstanceImpl implements WritablePdxInstance {
   private static final long serialVersionUID = 7398999150097596214L;
   private static final Object NULL_TOKEN = new Object();
   private Object[] dirtyFields = null;
+  private static final Logger logger = LogService.getLogger();
 
   public WritablePdxInstanceImpl(PdxReaderImpl original) {
     super(original);
@@ -89,17 +94,25 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
         writer = new PdxWriterImpl(getPdxType(), os);
       }
       for (PdxField f : getPdxType().getFields()) {
-        if (f.isDeleted()) {
-          continue;
-        }
-        Object dv = dirtyFields[f.getFieldIndex()];
-        if (dv != null) {
-          if (dv == NULL_TOKEN) {
-            dv = null;
+        try {
+          if (f.isDeleted()) {
+            continue;
           }
-          writer.writeField(f, dv);
-        } else {
-          writer.writeRawField(f, getRaw(f));
+          Object dv = dirtyFields[f.getFieldIndex()];
+          if (dv != null) {
+            if (dv == NULL_TOKEN) {
+              dv = null;
+            }
+            writer.writeField(f, dv);
+          } else {
+            writer.writeRawField(f, getRaw(f));
+          }
+        } catch (PdxSerializationException e) {
+          logger.info("WritablePdxInstance.getUnmodifiedReader():f.getFieldName()=" + f.getFieldName());
+          for (PdxField field : getPdxType().getFields()) {
+            logger.info(field.toString());
+          }
+          throw e;
         }
       }
       writer.completeByteStreamGeneration();

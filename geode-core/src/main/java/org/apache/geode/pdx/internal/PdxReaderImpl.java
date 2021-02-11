@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -28,6 +30,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxFieldTypeMismatchException;
 import org.apache.geode.pdx.PdxInstance;
@@ -54,6 +57,8 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   private final PdxType blobType;
   private final PdxInputStream dis;
   private transient PdxUnreadData readUnreadFieldsCalled;
+
+  private static final Logger logger = LogService.getLogger();
 
   protected PdxReaderImpl(PdxReaderImpl copy) {
     this.blobType = copy.blobType;
@@ -631,14 +636,19 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    * @return the offset to the variable length field
    */
   private int getOffset(int idx) {
+    int result;
     int size = this.dis.size();
     if (size <= MAX_UNSIGNED_BYTE) {
-      return dis.readByte(size - idx * DataSize.BYTE_SIZE) & MAX_UNSIGNED_BYTE;
+      result = dis.readByte(size - idx * DataSize.BYTE_SIZE) & MAX_UNSIGNED_BYTE;
     } else if (size <= MAX_UNSIGNED_SHORT) {
-      return dis.readShort(size - idx * DataSize.SHORT_SIZE) & MAX_UNSIGNED_SHORT;
+      result = dis.readShort(size - idx * DataSize.SHORT_SIZE) & MAX_UNSIGNED_SHORT;
     } else {
-      return dis.readInt(size - idx * DataSize.INTEGER_SIZE);
+      result = dis.readInt(size - idx * DataSize.INTEGER_SIZE);
     }
+    if (result < 0) {
+      logger.info("result should be > 0, but result is " + result + " idx is " + idx + " size is " + size + " and originalSize is " + this.dis.getOriginalSize());
+    }
+    return result;
   }
 
   private int getPositionForField(PdxField ft) {

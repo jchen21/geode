@@ -787,6 +787,8 @@ public class ByteBufferInputStream extends InputStream
 
   private ByteSource buffer;
 
+  private int originalSize;
+
   public ByteBufferInputStream(ByteBuffer buffer) {
     setBuffer(buffer);
   }
@@ -795,10 +797,12 @@ public class ByteBufferInputStream extends InputStream
 
   protected ByteBufferInputStream(ByteBufferInputStream copy) {
     this.buffer = copy.buffer.duplicate();
+    this.originalSize = this.buffer.limit();
   }
 
   public ByteBufferInputStream(StoredObject blob) {
     this.buffer = ByteSourceFactory.create(blob);
+    this.originalSize = this.buffer.limit();
   }
 
   public void setBuffer(ByteSource buffer) {
@@ -806,6 +810,7 @@ public class ByteBufferInputStream extends InputStream
       throw new NullPointerException();
     }
     this.buffer = buffer;
+    this.originalSize = this.buffer.limit();
   }
 
   public void setBuffer(ByteBuffer bb) {
@@ -813,6 +818,10 @@ public class ByteBufferInputStream extends InputStream
       throw new NullPointerException();
     }
     setBuffer(ByteSourceFactory.create(bb));
+  }
+
+  public int getOriginalSize() {
+    return this.originalSize;
   }
 
   /**
