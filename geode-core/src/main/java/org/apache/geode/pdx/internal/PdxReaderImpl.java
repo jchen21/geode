@@ -899,7 +899,24 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     } else {
       endOffset = getAbsolutePosition(getPdxType().getPdxFieldByIndex(nextFieldIdx));
     }
-    return this.dis.slice(startOffset, endOffset);
+
+    try {
+      ByteSource result = this.dis.slice(startOffset, endOffset);
+      return result;
+    } catch (PdxSerializationException e) {
+      logger.info("PdxReaderImpl.getRaw():PdxField ft=" + ft + " ft.isVariableLengthType()="
+          + ft.isVariableLengthType() + " startOffset=" + startOffset);
+      logger.info("PdxReaderImpl.getRaw():nextFieldIdx=" + nextFieldIdx
+          + " getPdxType().getFieldCount()=" + getPdxType().getFieldCount());
+      logger.info("PdxReaderImpl.getRaw():this.dis.size()=" + this.dis.size()
+          + " blobType.getVariableLengthFieldCount()=" + blobType.getVariableLengthFieldCount()
+          + " getSizeOfOffset()=" + getSizeOfOffset() + " endOffset=" + endOffset);
+      logger.info("PdxReaderImpl.getRaw():getPdxType().getPdxFieldByIndex(nextFieldIdx)="
+          + getPdxType().getPdxFieldByIndex(nextFieldIdx) + " isVariableLengthType()="
+          + getPdxType().getPdxFieldByIndex(nextFieldIdx).isVariableLengthType() + " endOffset="
+          + endOffset);
+      throw e;
+    }
   }
 
   @Override
