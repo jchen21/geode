@@ -110,9 +110,6 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
         } catch (PdxSerializationException e) {
           logger.info(
               "WritablePdxInstance.getUnmodifiedReader():f.getFieldName()=" + f.getFieldName());
-          for (PdxField field : getPdxType().getFields()) {
-            logger.info(field.toString());
-          }
           throw e;
         }
       }

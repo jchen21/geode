@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
@@ -645,7 +646,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     } else {
       result = dis.readInt(size - idx * DataSize.INTEGER_SIZE);
     }
-    if (result < 0) {
+    if (result <= 0) {
       logger.info("result should be > 0, but result is " + result + " idx is " + idx + " size is "
           + size + " and originalSize is " + this.dis.getOriginalSize());
     }
@@ -909,12 +910,22 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       logger.info("PdxReaderImpl.getRaw():nextFieldIdx=" + nextFieldIdx
           + " getPdxType().getFieldCount()=" + getPdxType().getFieldCount());
       logger.info("PdxReaderImpl.getRaw():this.dis.size()=" + this.dis.size()
+          + " originalSize=" + this.dis.getOriginalSize()
+          + " position=" + this.dis.position()
+          + " capacity=" + this.dis.getBuffer().capacity()
+          + " array.length=" + this.dis.getBuffer().getBackingByteBuffer().array().length
+          + " arrayOffset=" + this.dis.getBuffer().getBackingByteBuffer().arrayOffset()
           + " blobType.getVariableLengthFieldCount()=" + blobType.getVariableLengthFieldCount()
           + " getSizeOfOffset()=" + getSizeOfOffset() + " endOffset=" + endOffset);
       logger.info("PdxReaderImpl.getRaw():getPdxType().getPdxFieldByIndex(nextFieldIdx)="
           + getPdxType().getPdxFieldByIndex(nextFieldIdx) + " isVariableLengthType()="
           + getPdxType().getPdxFieldByIndex(nextFieldIdx).isVariableLengthType() + " endOffset="
           + endOffset);
+      for (PdxField field : getPdxType().getFields()) {
+        logger.info(field.toString() + " getAbsolutePosition=" + getAbsolutePosition(field));
+      }
+      logger.info("ByteBuffer.array()="
+          + Arrays.toString(this.dis.getBuffer().getBackingByteBuffer().array()));
       throw e;
     }
   }
